@@ -1,228 +1,142 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Dashboard de Facturation</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background: #0066cc;
-      padding: 20px;
-      color: white;
-      text-align: center;
-      font-size: 24px;
-    }
-
-    .container {
-      background: white;
-      margin: 30px auto;
-      padding: 30px;
-      border-radius: 8px;
-      max-width: 700px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      margin-top: 0;
-      color: #222;
-    }
-
-    label {
-      display: block;
-      margin: 15px 0 5px;
-      font-weight: bold;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    .services-list {
-      margin-top: 15px;
-    }
-
-    .service-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px;
-      background: #f8f8f8;
-      margin-bottom: 5px;
-      border-radius: 4px;
-    }
-
-    .total {
-      text-align: right;
-      margin-top: 15px;
-      font-weight: bold;
-      font-size: 18px;
-    }
-
-    .btn-group {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 25px;
-    }
-
-    button {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 6px;
-      background: #0066cc;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      width: 48%;
-    }
-
-    button:hover {
-      background: #004e9c;
-    }
-
-    .error {
-      color: red;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-  </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <header>Dashboard de Facturation</header>
-  <div class="container">
-    <h2>Informations du Patient</h2>
-    <label for="ipp">IPP du Patient</label>
-    <input type="text" id="ipp" placeholder="Ex: IPP-123456789" />
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-2xl font-bold text-center text-blue-700 mb-6">Dashboard de Facturation</h1>
 
-    <h2>Services Disponibles</h2>
-    <div class="services-list" id="services-list">Chargement...</div>
-
-    <label for="mode">Mode de Paiement</label>
-    <select id="mode">
-      <option value="espèces">Espèces</option>
-      <option value="assurance">Assurance</option>
-    </select>
-
-    <div class="total">Total: <span id="total">0</span> MAD</div>
-
-    <div class="btn-group">
-      <button onclick="creerFacture()">Créer Facture</button>
-      <button onclick="marquerCommePaye()">Marquer comme Payé</button>
+    <div class="mb-6">
+      <label class="block font-semibold mb-1">IPP du Patient</label>
+      <input id="ipp" type="text" class="w-full p-2 border rounded" placeholder="Ex: IPP-123456789" />
     </div>
 
-    <div class="error" id="error"></div>
+    <div class="mb-6">
+      <label class="block font-semibold mb-1">Services</label>
+      <select id="services" class="w-full p-2 border rounded" multiple></select>
+      <div id="services-error" class="text-red-600 mt-1 hidden">Erreur de chargement des services</div>
+    </div>
+
+    <div class="mb-6">
+      <label class="block font-semibold mb-1">Mode de Paiement</label>
+      <select id="mode-paiement" class="w-full p-2 border rounded">
+        <option value="espèces">Espèces</option>
+        <option value="carte">Carte Bancaire</option>
+        <option value="assurance">Assurance</option>
+      </select>
+    </div>
+
+    <div class="mb-6 text-right text-lg font-semibold">
+      Total: <span id="total">0</span> MAD
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <button onclick="creerFacture()" class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">Créer Facture</button>
+      <button onclick="marquerCommePaye()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Marquer comme Payé</button>
+    </div>
   </div>
 
   <script>
-    const apiBase = "https://workflows.aphelionxinnovations.com/webhook";
-    const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA"; // Replace this before testing
-    let selectedServices = [];
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA";
+
+    let choicesInstance;
     let allServices = [];
 
-    async function loadServices() {
-      const res = document.getElementById("services-list");
+    async function chargerServices() {
       try {
-        const response = await fetch(`${apiBase}/tarifs`, {
-          headers: { Authorization: `Bearer ${jwt}` }
+        const response = await axios.get("https://workflows.aphelionxinnovations.com/webhook/tarifs", {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await response.json();
-        allServices = data.services || data; // adjust depending on API
-        res.innerHTML = "";
 
-        allServices.forEach(service => {
-          const div = document.createElement("div");
-          div.className = "service-item";
-          div.innerHTML = `
-            <label>
-              <input type="checkbox" value="${service.id}" data-price="${parseFloat(service.price)}" onchange="updateTotal()" />
-              ${service.name}
-            </label>
-            <span>${parseFloat(service.price)} MAD</span>
-          `;
-          res.appendChild(div);
+        const data = response.data.services || response.data;
+
+        allServices = data;
+
+        const select = document.getElementById("services");
+        data.forEach(service => {
+          const option = document.createElement("option");
+          option.value = service.id;
+          option.textContent = `${service.name} (${service.price} MAD)`;
+          option.setAttribute('data-price', service.price);
+          select.appendChild(option);
         });
-      } catch (err) {
-        res.innerHTML = "Erreur de chargement des services";
-        console.error(err);
+
+        choicesInstance = new Choices(select, {
+          removeItemButton: true,
+          searchEnabled: true,
+          placeholder: true,
+          placeholderValue: 'Sélectionnez un ou plusieurs services',
+        });
+
+        select.addEventListener("change", updateTotal);
+      } catch (error) {
+        document.getElementById("services-error").classList.remove("hidden");
+        console.error("Erreur chargement services:", error);
       }
     }
 
     function updateTotal() {
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+      const selectedIds = choicesInstance.getValue(true);
       let total = 0;
-      selectedServices = [];
-      checkboxes.forEach(cb => {
-        total += parseFloat(cb.getAttribute("data-price"));
-        selectedServices.push(parseInt(cb.value));
+      selectedIds.forEach(id => {
+        const service = allServices.find(s => s.id == id);
+        if (service) total += parseFloat(service.price);
       });
-      document.getElementById("total").textContent = total.toFixed(2);
+      document.getElementById("total").innerText = total.toFixed(2);
     }
 
     async function creerFacture() {
-      const ipp = document.getElementById("ipp").value.trim();
-      const mode = document.getElementById("mode").value;
-      const error = document.getElementById("error");
+      const ipp = document.getElementById("ipp").value;
+      const mode = document.getElementById("mode-paiement").value;
+      const services = choicesInstance.getValue(true);
 
-      if (!ipp || selectedServices.length === 0) {
-        error.textContent = "Veuillez remplir tous les champs et sélectionner au moins un service.";
+      if (!ipp || services.length === 0) {
+        alert("Veuillez remplir tous les champs !");
         return;
       }
 
       try {
-        const response = await fetch(`${apiBase}/create-facture`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${jwt}`
-          },
-          body: JSON.stringify({
-            ipp,
-            mode_paiement: mode,
-            services: selectedServices
-          })
+        const res = await axios.post("https://workflows.aphelionxinnovations.com/webhook/create-facture", {
+          ipp,
+          mode_paiement: mode,
+          services
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        const result = await response.json();
-        alert("Facture créée avec ID: " + result.facture_id);
-        error.textContent = "";
+
+        alert("✅ Facture créée avec succès ! ID: " + res.data.facture_id);
       } catch (err) {
-        error.textContent = "Erreur lors de la création de la facture.";
+        alert("❌ Erreur création facture.");
         console.error(err);
       }
     }
 
     async function marquerCommePaye() {
-      const factureId = prompt("Entrez l'ID de la facture à marquer comme payée:");
-      if (!factureId) return;
+      const facture_id = prompt("ID de la facture à marquer comme payée:");
+      if (!facture_id) return;
 
       try {
-        const response = await fetch(`${apiBase}/facture/update-payment-status`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${jwt}`
-          },
-          body: JSON.stringify({
-            facture_id: parseInt(factureId),
-            etat_paiement: "payé"
-          })
+        await axios.post("https://workflows.aphelionxinnovations.com/webhook/facture/update-payment-status", {
+          facture_id,
+          etat_paiement: "payé"
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        const result = await response.json();
-        alert("Paiement mis à jour avec succès!");
+
+        alert("✅ Facture mise à jour !");
       } catch (err) {
-        alert("Erreur lors de la mise à jour.");
+        alert("❌ Erreur mise à jour.");
         console.error(err);
       }
     }
 
-    loadServices();
+    window.onload = chargerServices;
   </script>
 </body>
 </html>
