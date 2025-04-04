@@ -1,160 +1,181 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Dashboard de Facturation</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
+      background: #f5f5f5;
       padding: 20px;
     }
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
-      background: #fff;
+      background: white;
       padding: 30px;
       border-radius: 8px;
     }
-    h1 {
+    h2 {
       text-align: center;
       color: #007bff;
     }
-    .section-title {
-      font-weight: bold;
-      margin-top: 20px;
-      font-size: 18px;
+    .info-block {
+      margin-bottom: 20px;
+    }
+    .info-block b {
+      display: inline-block;
+      width: 160px;
     }
     label {
       font-weight: bold;
     }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    select,
-    input {
+    select, .ts-control {
       width: 100%;
       padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      margin-bottom: 15px;
     }
-    .btn {
-      padding: 10px 20px;
-      border: none;
-      color: white;
+    .total {
+      font-size: 18px;
       font-weight: bold;
+      margin: 20px 0;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      border: none;
       border-radius: 5px;
+      color: white;
       cursor: pointer;
     }
-    .btn-blue {
+    #createBtn {
       background-color: #007bff;
     }
-    .btn-green {
+    #markPaidBtn {
       background-color: #28a745;
-    }
-    .btn-group {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Dashboard de Facturation</h1>
+    <h2>Dashboard de Facturation</h2>
+    <div id="patient-info" class="info-block"></div>
 
-    <div id="patient-info">
-      <div class="section-title">Informations du Patient</div>
-      <p><strong>Nom:</strong> <span id="nom"></span></p>
-      <p><strong>Prénom:</strong> <span id="prenom"></span></p>
-      <p><strong>CIN:</strong> <span id="cin"></span></p>
-      <p><strong>Téléphone:</strong> <span id="telephone"></span></p>
-      <p><strong>Adresse:</strong> <span id="adresse"></span></p>
-      <p><strong>Ville:</strong> <span id="ville"></span></p>
-      <p><strong>Date de Naissance:</strong> <span id="date_naissance"></span></p>
-      <p><strong>Sexe:</strong> <span id="sexe"></span></p>
-      <p><strong>Mutuelle:</strong> <span id="mutuelle"></span></p>
-    </div>
-
-    <div class="form-group">
-      <div class="section-title">Services Disponibles</div>
+    <div>
+      <label>Services Disponibles</label>
       <select id="services" multiple></select>
-    </div>
 
-    <div class="form-group">
-      <label>Mode de Paiement</label>
-      <select id="mode-paiement">
+      <label for="mode_paiement">Mode de Paiement</label>
+      <select id="mode_paiement">
         <option value="espèces">Espèces</option>
-        <option value="assurance">Assurance</option>
-        <option value="carte">Carte Bancaire</option>
+        <option value="carte">Carte</option>
+        <option value="mutuelle">Mutuelle</option>
       </select>
-    </div>
 
-    <div class="form-group">
-      <strong>Total:</strong> <span id="total">0 MAD</span>
-    </div>
+      <div class="total" id="total">Total: 0 MAD</div>
 
-    <div class="btn-group">
-      <button class="btn btn-blue">Créer Facture</button>
-      <button class="btn btn-green">Marquer comme Payé</button>
+      <button id="createBtn">Créer Facture</button>
+      <button id="markPaidBtn">Marquer comme Payé</button>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
   <script>
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA"; // Replace with full token
+    const baseUrl = 'https://workflows.aphelionxinnovations.com';
+    const jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA';
 
     const urlParams = new URLSearchParams(window.location.search);
-    const ipp = urlParams.get("ipp");
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
+    const ipp = urlParams.get('ipp');
+    let patientData = {};
+    let selectedOptions = [];
 
     async function loadPatientInfo() {
-      const res = await fetch(`https://workflows.aphelionxinnovations.com/webhook/bill-get-patient?ipp=${ipp}`, { headers });
+      const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${ipp}`, {
+        headers: { Authorization: `Bearer ${jwtToken}` }
+      });
       const data = await res.json();
-      document.getElementById("nom").textContent = data.nom;
-      document.getElementById("prenom").textContent = data.prenom;
-      document.getElementById("cin").textContent = data.cin;
-      document.getElementById("telephone").textContent = data.telephone;
-      document.getElementById("adresse").textContent = data.adresse;
-      document.getElementById("ville").textContent = data.ville;
-      document.getElementById("date_naissance").textContent = data.date_naissance;
-      document.getElementById("sexe").textContent = data.sexe;
-      document.getElementById("mutuelle").textContent = data.mutuelle;
+      patientData = data;
+      document.getElementById('patient-info').innerHTML = `
+        <h3>Informations du Patient</h3>
+        <p><b>Nom:</b> ${data.nom}</p>
+        <p><b>Prénom:</b> ${data.prenom}</p>
+        <p><b>CIN:</b> ${data.cin}</p>
+        <p><b>Téléphone:</b> ${data.telephone}</p>
+        <p><b>Adresse:</b> ${data.adresse}</p>
+        <p><b>Ville:</b> ${data.ville}</p>
+        <p><b>Date de Naissance:</b> ${data.date_naissance}</p>
+        <p><b>Sexe:</b> ${data.sexe}</p>
+        <p><b>Mutuelle:</b> ${data.mutuelle}</p>
+      `;
     }
 
     async function loadServices() {
-      const res = await fetch("https://workflows.aphelionxinnovations.com/webhook/tarifs", { headers });
-      const json = await res.json();
-      const services = json.services;
+      const res = await fetch(`${baseUrl}/webhook/tarifs`, {
+        headers: { Authorization: `Bearer ${jwtToken}` }
+      });
+      const { services } = await res.json();
+      const options = services.map(s => ({ value: s.id, text: `${s.name} - ${parseFloat(s.price).toFixed(2)} MAD`, price: parseFloat(s.price) }));
+      const select = document.getElementById('services');
 
-      const serviceSelect = document.getElementById("services");
       services.forEach(service => {
-        const option = document.createElement("option");
-        option.value = JSON.stringify({ id: service.id, price: parseFloat(service.price) });
-        option.textContent = `${service.name} - ${parseFloat(service.price).toFixed(2)} MAD`;
-        serviceSelect.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = service.id;
+        opt.text = `${service.name} - ${parseFloat(service.price).toFixed(2)} MAD`;
+        opt.dataset.price = service.price;
+        select.appendChild(opt);
       });
 
-      const choices = new Choices(serviceSelect, {
-        removeItemButton: true,
-        searchEnabled: true,
-      });
-
-      serviceSelect.addEventListener("change", () => {
-        const selected = choices.getValue();
-        const total = selected.reduce((sum, item) => {
-          const parsed = JSON.parse(item.value);
-          return sum + parsed.price;
-        }, 0);
-        document.getElementById("total").textContent = `${total.toFixed(2)} MAD`;
+      const ts = new TomSelect(select, {
+        maxItems: null,
+        plugins: ['remove_button'],
+        onChange: (values) => {
+          selectedOptions = services.filter(s => values.includes(s.id.toString()));
+          updateTotal();
+        }
       });
     }
+
+    function updateTotal() {
+      const total = selectedOptions.reduce((acc, s) => acc + parseFloat(s.price), 0);
+      document.getElementById('total').innerText = `Total: ${total.toFixed(2)} MAD`;
+    }
+
+    document.getElementById('createBtn').addEventListener('click', async () => {
+      const modePaiement = document.getElementById('mode_paiement').value;
+      const services = selectedOptions.map(s => s.id);
+      if (!modePaiement || services.length === 0) return alert('Veuillez remplir tous les champs');
+
+      const res = await fetch(`${baseUrl}/webhook/create-facture`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({ ipp, mode_paiement: modePaiement, services })
+      });
+      const data = await res.json();
+      if (res.ok) alert(`Facture créée avec succès ! ID: ${data.facture_id}`);
+      else alert('Erreur: ' + data.errorMessage);
+    });
+
+    document.getElementById('markPaidBtn').addEventListener('click', async () => {
+      const factureId = prompt("Entrez l'ID de la facture à marquer comme payé:");
+      if (!factureId) return;
+
+      const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({ facture_id: parseInt(factureId), etat_paiement: 'payé' })
+      });
+
+      const data = await res.json();
+      if (res.ok) alert("Facture marquée comme payée.");
+      else alert('Erreur: ' + data.errorMessage);
+    });
 
     loadPatientInfo();
     loadServices();
