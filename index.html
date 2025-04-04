@@ -56,6 +56,19 @@
     #markPaidBtn {
       background-color: #28a745;
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -78,6 +91,26 @@
 
       <button id="createBtn">Créer Facture</button>
       <button id="markPaidBtn">Marquer comme Payé</button>
+    </div>
+
+    <div class="facture-status">
+      <h3>Factures Existantes</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Montant</th>
+            <th>Mode de Paiement</th>
+            <th>Statut</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="factureList">
+          <tr>
+            <td colspan="5">Chargement des factures...</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -157,6 +190,7 @@
       const data = await res.json();
       if (res.ok) alert(`Facture créée avec succès ! ID: ${data.facture_id}`);
       else alert('Erreur: ' + data.errorMessage);
+      fetchFactures();
     });
 
     document.getElementById('markPaidBtn').addEventListener('click', async () => {
@@ -175,10 +209,41 @@
       const data = await res.json();
       if (res.ok) alert("Facture marquée comme payée.");
       else alert('Erreur: ' + data.errorMessage);
+      fetchFactures();
     });
 
-    loadPatientInfo();
-    loadServices();
+    async function fetchFactures() {
+      const response = await fetch(`${baseUrl}/webhook/factures?ipp=${ipp}`, {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`
+        }
+      });
+      const data = await response.json();
+      const factureList = document.getElementById("factureList");
+      factureList.innerHTML = "";
+
+      if (data && data.length > 0) {
+        data.forEach(facture => {
+          factureList.innerHTML += `
+            <tr>
+              <td>${facture.id}</td>
+              <td>${facture.montant} MAD</td>
+              <td>${facture.mode_paiement}</td>
+              <td><span>${facture.etat_paiement}</span></td>
+              <td>${new Date(facture.date_facturation).toLocaleString()}</td>
+            </tr>
+          `;
+        });
+      } else {
+        factureList.innerHTML = `<tr><td colspan="5">Aucune facture trouvée pour ce patient.</td></tr>`;
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadPatientInfo();
+      loadServices();
+      fetchFactures();
+    });
   </script>
 </body>
 </html>
