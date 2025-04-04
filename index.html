@@ -32,11 +32,7 @@
 <div class="container">
   <h2 class="mb-4 text-center text-primary">Dashboard de Facturation</h2>
 
-  <div class="mb-3">
-    <label for="ipp" class="form-label">IPP du Patient</label>
-    <input type="text" class="form-control" id="ipp" placeholder="Ex: IPP-123456789">
-    <button class="btn btn-sm btn-secondary mt-2" onclick="loadPatientInfo()">Charger le Patient</button>
-  </div>
+  <input type="hidden" id="ipp">
 
   <div id="patientInfo" class="mb-4" style="display:none;">
     <h5>Informations du Patient</h5>
@@ -75,6 +71,11 @@
   let servicesData = [];
   let currentFactureId = null;
 
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
   async function loadServices() {
     try {
       const res = await axios.get("https://workflows.aphelionxinnovations.com/webhook/tarifs", {
@@ -103,8 +104,7 @@
     document.getElementById("total").textContent = total.toFixed(2);
   }
 
-  async function loadPatientInfo() {
-    const ipp = document.getElementById("ipp").value;
+  async function loadPatientInfo(ipp) {
     try {
       const res = await axios.get(`https://workflows.aphelionxinnovations.com/webhook/bill-get-patient?ipp=${ipp}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -153,7 +153,14 @@
     }
   }
 
-  window.onload = loadServices;
+  window.onload = () => {
+    loadServices();
+    const ippFromUrl = getQueryParam("ipp");
+    if (ippFromUrl) {
+      document.getElementById("ipp").value = ippFromUrl;
+      loadPatientInfo(ippFromUrl);
+    }
+  }
 </script>
 </body>
 </html>
