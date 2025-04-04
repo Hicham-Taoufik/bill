@@ -7,87 +7,96 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <style>
-    .select2-container .select2-selection--multiple {
-      height: auto;
+    body { background-color: #f8f9fa; padding: 20px; }
+    h2 { color: #007bff; }
+    .select2-container--default .select2-selection--multiple {
       min-height: 38px;
-    }
-    .facture-row td {
-      vertical-align: middle;
     }
   </style>
 </head>
-<body class="bg-light">
-  <div class="container py-4">
-    <h2 class="text-center text-primary mb-4">Dashboard de Facturation</h2>
+<body>
+  <div class="container bg-white p-4 rounded shadow">
+    <h2 class="text-center mb-4">Dashboard de Facturation</h2>
 
-    <div class="card mb-4">
-      <div class="card-body">
-        <h5><strong>Informations du Patient</strong></h5>
-        <p><strong>Nom:</strong> <span id="nom"></span></p>
-        <p><strong>Prénom:</strong> <span id="prenom"></span></p>
-        <p><strong>CIN:</strong> <span id="cin"></span></p>
-        <p><strong>Téléphone:</strong> <span id="telephone"></span></p>
-        <p><strong>Adresse:</strong> <span id="adresse"></span></p>
-        <p><strong>Ville:</strong> <span id="ville"></span></p>
-        <p><strong>Date de Naissance:</strong> <span id="date_naissance"></span></p>
-        <p><strong>Sexe:</strong> <span id="sexe"></span></p>
-        <p><strong>Mutuelle:</strong> <span id="mutuelle"></span></p>
-      </div>
+    <div id="patientInfo" class="mb-4">
+      <h5>Informations du Patient</h5>
+      <p><strong>Nom:</strong> <span id="nom"></span></p>
+      <p><strong>Prénom:</strong> <span id="prenom"></span></p>
+      <p><strong>CIN:</strong> <span id="cin"></span></p>
+      <p><strong>Téléphone:</strong> <span id="telephone"></span></p>
+      <p><strong>Adresse:</strong> <span id="adresse"></span></p>
+      <p><strong>Ville:</strong> <span id="ville"></span></p>
+      <p><strong>Date de Naissance:</strong> <span id="date_naissance"></span></p>
+      <p><strong>Sexe:</strong> <span id="sexe"></span></p>
+      <p><strong>Mutuelle:</strong> <span id="mutuelle"></span></p>
     </div>
 
-    <div class="card mb-4">
-      <div class="card-body">
-        <h5><strong>Services Disponibles</strong></h5>
-        <select id="services" class="form-select" multiple></select>
-
-        <div class="mt-3">
-          <label for="mode_paiement" class="form-label"><strong>Mode de Paiement</strong></label>
-          <select id="mode_paiement" class="form-select">
-            <option value="espèces">Espèces</option>
-            <option value="carte">Carte Bancaire</option>
-            <option value="assurance">Assurance</option>
-          </select>
-        </div>
-
-        <p class="mt-3"><strong>Total:</strong> <span id="total">0</span> MAD</p>
-
-        <button class="btn btn-primary" onclick="creerFacture()">Créer Facture</button>
-      </div>
+    <div class="mb-3">
+      <label for="services" class="form-label fw-bold">Services Disponibles</label>
+      <select id="services" class="form-control" multiple></select>
     </div>
 
-    <div class="card">
-      <div class="card-body">
-        <h5><strong>Factures Créées</strong></h5>
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Montant</th>
-              <th>Mode Paiement</th>
-              <th>Statut</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="factureTableBody"></tbody>
-        </table>
-      </div>
+    <div class="mb-3">
+      <label for="modePaiement" class="form-label fw-bold">Mode de Paiement</label>
+      <select id="modePaiement" class="form-control">
+        <option>Espèces</option>
+        <option>Carte</option>
+        <option>Assurance</option>
+      </select>
     </div>
+
+    <p class="fw-bold">Total: <span id="total">0</span> MAD</p>
+
+    <button id="createFacture" class="btn btn-primary">Créer Facture</button>
+    <button id="markPaid" class="btn btn-success">Marquer comme Payé</button>
+
+    <hr>
+    <h5>Factures Existantes</h5>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th><th>Montant</th><th>Mode de Paiement</th><th>Statut</th><th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="facturesTable">
+        <tr><td colspan="5">Chargement des factures...</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA"; // your full token here
-    const baseUrl = "https://workflows.aphelionxinnovations.com";
-    const ipp = new URLSearchParams(window.location.search).get("ipp");
+    const baseUrl = 'https://workflows.aphelionxinnovations.com';
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA';
+    const ipp = new URLSearchParams(window.location.search).get('ipp');
+    let servicesList = [], selectedServices = [], lastCreatedFactureId = null;
 
-    async function fetchPatientInfo() {
+    $(document).ready(() => {
+      $('#services').select2({ placeholder: 'Sélectionner des services...' });
+      fetchPatient();
+      fetchServices();
+      loadFactures();
+
+      $('#services').on('change', function () {
+        selectedServices = $(this).val().map(id => servicesList.find(s => s.id == id));
+        updateTotal();
+      });
+    });
+
+    function updateTotal() {
+      const total = selectedServices.reduce((sum, s) => sum + parseFloat(s.price), 0);
+      document.getElementById('total').textContent = total.toFixed(2);
+    }
+
+    async function fetchPatient() {
       const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${ipp}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      for (let key in data) {
-        if (document.getElementById(key)) document.getElementById(key).textContent = data[key];
+      for (const key in data) {
+        const el = document.getElementById(key);
+        if (el) el.textContent = data[key];
       }
     }
 
@@ -95,84 +104,64 @@
       const res = await fetch(`${baseUrl}/webhook/tarifs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
-      const select = document.getElementById("services");
-      data.services.forEach(s => {
-        const option = document.createElement("option");
-        option.value = s.id;
-        option.textContent = `${s.name} - ${parseFloat(s.price).toFixed(2)} MAD`;
-        option.dataset.price = s.price;
-        select.appendChild(option);
+      servicesList = await res.json();
+      servicesList.forEach(s => {
+        const option = new Option(`${s.name} - ${s.price} MAD`, s.id);
+        $('#services').append(option);
       });
-      $("#services").select2();
     }
 
-    document.getElementById("services").addEventListener("change", () => {
-      let total = 0;
-      [...document.getElementById("services").selectedOptions].forEach(opt => {
-        total += parseFloat(opt.dataset.price);
+    document.getElementById("createFacture").addEventListener("click", async () => {
+      const response = await fetch(`${baseUrl}/webhook/create-facture`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ipp,
+          mode_paiement: document.getElementById("modePaiement").value,
+          services: selectedServices.map((s) => s.id),
+        }),
       });
-      document.getElementById("total").textContent = total.toFixed(2);
+
+      const data = await response.json();
+      lastCreatedFactureId = data.facture_id;
+      alert("Facture créée !");
+      loadFactures();
     });
 
-    async function creerFacture() {
-      const serviceIds = [...document.getElementById("services").selectedOptions].map(opt => parseInt(opt.value));
-      const mode = document.getElementById("mode_paiement").value;
+    document.getElementById("markPaid").addEventListener("click", async () => {
+      if (!lastCreatedFactureId) {
+        alert("Aucune facture récemment créée !");
+        return;
+      }
 
-      const res = await fetch(`${baseUrl}/webhook/create-facture`, {
+      await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ ipp, mode_paiement: mode, services: serviceIds })
+        body: JSON.stringify({
+          facture_id: lastCreatedFactureId,
+          etat_paiement: "payé",
+        }),
       });
 
-      const result = await res.json();
-      alert(result.message);
-      fetchFactures();
-    }
+      alert(`Facture #${lastCreatedFactureId} marquée comme payée !`);
+      loadFactures();
+    });
 
-    async function fetchFactures() {
-      const res = await fetch(`${baseUrl}/webhook/factures?ipp=${ipp}`, {
+    async function loadFactures() {
+      const res = await fetch(`${baseUrl}/webhook/factures-by-ipp?ipp=${ipp}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const { factures } = await res.json();
-      const tbody = document.getElementById("factureTableBody");
-      tbody.innerHTML = "";
-
-      factures.forEach(f => {
-        const row = document.createElement("tr");
-        row.className = "facture-row";
-        row.innerHTML = `
-          <td>${f.id}</td>
-          <td>${f.montant} MAD</td>
-          <td>${f.mode_paiement}</td>
-          <td>${f.etat_paiement}</td>
-          <td>
-            <button class="btn btn-success btn-sm" onclick="marquerCommePaye(${f.id})">Marquer comme Payé</button>
-          </td>`;
-        tbody.appendChild(row);
-      });
+      const list = await res.json();
+      const tbody = document.getElementById("facturesTable");
+      tbody.innerHTML = list.length === 0 ? '<tr><td colspan="5">Aucune facture</td></tr>' :
+        list.map(f => `<tr><td>${f.id}</td><td>${f.montant} MAD</td><td>${f.mode_paiement}</td><td>${f.etat_paiement}</td><td>${new Date(f.date_facturation).toLocaleString()}</td></tr>`).join('');
     }
-
-    async function marquerCommePaye(id) {
-      const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ facture_id: id, etat_paiement: "payé" })
-      });
-      const result = await res.json();
-      alert(result.message);
-      fetchFactures();
-    }
-
-    fetchPatientInfo();
-    fetchServices();
-    fetchFactures();
   </script>
 </body>
 </html>
