@@ -3,210 +3,226 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tableau de Facturation</title>
+  <title>Dashboard de Facturation</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
       margin: 0;
       padding: 0;
-      background: #f2f2f2;
     }
 
     header {
-      background-color: #0066cc;
-      color: white;
+      background: #0066cc;
       padding: 20px;
+      color: white;
       text-align: center;
+      font-size: 24px;
     }
 
     .container {
-      max-width: 960px;
-      margin: 30px auto;
       background: white;
+      margin: 30px auto;
       padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      max-width: 700px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     h2 {
-      margin-bottom: 20px;
-      color: #333;
+      margin-top: 0;
+      color: #222;
     }
 
     label {
       display: block;
-      margin-top: 15px;
+      margin: 15px 0 5px;
       font-weight: bold;
     }
 
     input, select {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+    .services-list {
+      margin-top: 15px;
     }
 
-    th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f7f7f7;
+    .service-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      background: #f8f8f8;
+      margin-bottom: 5px;
+      border-radius: 4px;
     }
 
     .total {
-      font-size: 1.2em;
       text-align: right;
-      margin-top: 20px;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 18px;
     }
 
-    .actions {
-      margin-top: 30px;
+    .btn-group {
       display: flex;
-      gap: 20px;
+      justify-content: space-between;
+      margin-top: 25px;
     }
 
-    .actions button {
-      flex: 1;
-      padding: 12px;
-      background-color: #0066cc;
-      color: white;
+    button {
+      padding: 12px 20px;
       border: none;
-      border-radius: 8px;
-      font-size: 1em;
+      border-radius: 6px;
+      background: #0066cc;
+      color: white;
+      font-size: 16px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      width: 48%;
     }
 
-    .actions button:hover {
-      background-color: #004c99;
+    button:hover {
+      background: #004e9c;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>Dashboard de Facturation</h1>
-  </header>
-
+  <header>Dashboard de Facturation</header>
   <div class="container">
     <h2>Informations du Patient</h2>
     <label for="ipp">IPP du Patient</label>
     <input type="text" id="ipp" placeholder="Ex: IPP-123456789" />
 
     <h2>Services Disponibles</h2>
-    <div id="services-list">
-      <p>Chargement des services...</p>
-    </div>
+    <div class="services-list" id="services-list">Chargement...</div>
 
     <label for="mode">Mode de Paiement</label>
     <select id="mode">
       <option value="espèces">Espèces</option>
-      <option value="carte">Carte</option>
-      <option value="virement">Virement</option>
       <option value="assurance">Assurance</option>
     </select>
 
-    <div class="total">
-      <strong>Total:</strong> <span id="total-amount">0</span> MAD
+    <div class="total">Total: <span id="total">0</span> MAD</div>
+
+    <div class="btn-group">
+      <button onclick="creerFacture()">Créer Facture</button>
+      <button onclick="marquerCommePaye()">Marquer comme Payé</button>
     </div>
 
-    <div class="actions">
-      <button id="create-facture">Créer Facture</button>
-      <button id="mark-paid">Marquer comme Payé</button>
-    </div>
+    <div class="error" id="error"></div>
   </div>
 
   <script>
-    const servicesList = document.getElementById('services-list');
-    const totalDisplay = document.getElementById('total-amount');
-    const ippInput = document.getElementById('ipp');
-    const modeSelect = document.getElementById('mode');
-
+    const apiBase = "https://workflows.aphelionxinnovations.com/webhook";
+    const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA"; // Replace this before testing
     let selectedServices = [];
-    let services = [];
+    let allServices = [];
 
-    async function fetchServices() {
+    async function loadServices() {
+      const res = document.getElementById("services-list");
       try {
-        const res = await fetch('https://workflows.aphelionxinnovations.com/webhook/tarifs', {
-          headers: {
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA'
-          }
+        const response = await fetch(`${apiBase}/tarifs`, {
+          headers: { Authorization: `Bearer ${jwt}` }
         });
-        services = await res.json();
-        renderServices();
+        const data = await response.json();
+        allServices = data.services || data; // adjust depending on API
+        res.innerHTML = "";
+
+        allServices.forEach(service => {
+          const div = document.createElement("div");
+          div.className = "service-item";
+          div.innerHTML = `
+            <label>
+              <input type="checkbox" value="${service.id}" data-price="${parseFloat(service.price)}" onchange="updateTotal()" />
+              ${service.name}
+            </label>
+            <span>${parseFloat(service.price)} MAD</span>
+          `;
+          res.appendChild(div);
+        });
       } catch (err) {
-        servicesList.innerHTML = '<p>Erreur de chargement des services</p>';
+        res.innerHTML = "Erreur de chargement des services";
+        console.error(err);
       }
-    }
-
-    function renderServices() {
-      servicesList.innerHTML = '';
-      services.forEach(service => {
-        const label = document.createElement('label');
-        label.innerHTML = `
-          <input type="checkbox" value="${service.id}" data-price="${parseFloat(service.price)}">
-          ${service.name} (${parseFloat(service.price)} MAD)
-        `;
-        label.querySelector('input').addEventListener('change', (e) => {
-          const id = parseInt(e.target.value);
-          const price = parseFloat(e.target.getAttribute('data-price'));
-
-          if (e.target.checked) {
-            selectedServices.push({ id, price });
-          } else {
-            selectedServices = selectedServices.filter(s => s.id !== id);
-          }
-
-          updateTotal();
-        });
-        servicesList.appendChild(label);
-      });
     }
 
     function updateTotal() {
-      const total = selectedServices.reduce((sum, item) => sum + item.price, 0);
-      totalDisplay.innerText = total;
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+      let total = 0;
+      selectedServices = [];
+      checkboxes.forEach(cb => {
+        total += parseFloat(cb.getAttribute("data-price"));
+        selectedServices.push(parseInt(cb.value));
+      });
+      document.getElementById("total").textContent = total.toFixed(2);
     }
 
-    document.getElementById('create-facture').addEventListener('click', async () => {
-      const ipp = ippInput.value;
-      const mode = modeSelect.value;
-      const serviceIds = selectedServices.map(s => s.id);
+    async function creerFacture() {
+      const ipp = document.getElementById("ipp").value.trim();
+      const mode = document.getElementById("mode").value;
+      const error = document.getElementById("error");
 
-      if (!ipp || serviceIds.length === 0) {
-        alert('Veuillez saisir l\'IPP et sélectionner au moins un service.');
+      if (!ipp || selectedServices.length === 0) {
+        error.textContent = "Veuillez remplir tous les champs et sélectionner au moins un service.";
         return;
       }
 
-      const response = await fetch('https://workflows.aphelionxinnovations.com/webhook/create-facture', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA'
-        },
-        body: JSON.stringify({
-          ipp,
-          mode_paiement: mode,
-          services: serviceIds
-        })
-      });
+      try {
+        const response = await fetch(`${apiBase}/create-facture`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwt}`
+          },
+          body: JSON.stringify({
+            ipp,
+            mode_paiement: mode,
+            services: selectedServices
+          })
+        });
+        const result = await response.json();
+        alert("Facture créée avec ID: " + result.facture_id);
+        error.textContent = "";
+      } catch (err) {
+        error.textContent = "Erreur lors de la création de la facture.";
+        console.error(err);
+      }
+    }
 
-      const result = await response.json();
-      alert('Facture créée avec succès: ID ' + result.facture_id);
-    });
+    async function marquerCommePaye() {
+      const factureId = prompt("Entrez l'ID de la facture à marquer comme payée:");
+      if (!factureId) return;
 
-    fetchServices();
+      try {
+        const response = await fetch(`${apiBase}/facture/update-payment-status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwt}`
+          },
+          body: JSON.stringify({
+            facture_id: parseInt(factureId),
+            etat_paiement: "payé"
+          })
+        });
+        const result = await response.json();
+        alert("Paiement mis à jour avec succès!");
+      } catch (err) {
+        alert("Erreur lors de la mise à jour.");
+        console.error(err);
+      }
+    }
+
+    loadServices();
   </script>
-
 </body>
 </html>
