@@ -7,19 +7,20 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <style>
-    body { background-color: #f8f9fa; padding: 20px; }
-    h2 { color: #007bff; }
+    body { background: #f5f5f5; }
+    .container { background: #fff; padding: 30px; margin-top: 40px; border-radius: 10px; }
+    h2 { color: #007bff; text-align: center; margin-bottom: 30px; }
     .select2-container--default .select2-selection--multiple {
-      min-height: 38px;
+      min-height: 60px;
     }
   </style>
 </head>
 <body>
-  <div class="container bg-white p-4 rounded shadow">
-    <h2 class="text-center mb-4">Dashboard de Facturation</h2>
+  <div class="container">
+    <h2>Dashboard de Facturation</h2>
 
-    <div id="patientInfo" class="mb-4">
-      <h5>Informations du Patient</h5>
+    <div id="patientInfo">
+      <h5><strong>Informations du Patient</strong></h5>
       <p><strong>Nom:</strong> <span id="nom"></span></p>
       <p><strong>Prénom:</strong> <span id="prenom"></span></p>
       <p><strong>CIN:</strong> <span id="cin"></span></p>
@@ -32,135 +33,133 @@
     </div>
 
     <div class="mb-3">
-      <label for="services" class="form-label fw-bold">Services Disponibles</label>
+      <label><strong>Services Disponibles</strong></label>
       <select id="services" class="form-control" multiple></select>
     </div>
 
     <div class="mb-3">
-      <label for="modePaiement" class="form-label fw-bold">Mode de Paiement</label>
+      <label><strong>Mode de Paiement</strong></label>
       <select id="modePaiement" class="form-control">
-        <option>Espèces</option>
-        <option>Carte</option>
-        <option>Assurance</option>
+        <option value="espèces">Espèces</option>
+        <option value="carte">Carte</option>
+        <option value="virement">Virement</option>
       </select>
     </div>
 
-    <p class="fw-bold">Total: <span id="total">0</span> MAD</p>
+    <p><strong>Total:</strong> <span id="total">0</span> MAD</p>
+    <button class="btn btn-primary" onclick="createFacture()">Créer Facture</button>
+    <button class="btn btn-success" onclick="markAsPaid()">Marquer comme Payé</button>
 
-    <button id="createFacture" class="btn btn-primary">Créer Facture</button>
-    <button id="markPaid" class="btn btn-success">Marquer comme Payé</button>
-
-    <hr>
-    <h5>Factures Existantes</h5>
-    <table class="table table-bordered">
+    <hr />
+    <h5><strong>Factures Existantes</strong></h5>
+    <table class="table">
       <thead>
         <tr>
           <th>ID</th><th>Montant</th><th>Mode de Paiement</th><th>Statut</th><th>Date</th>
         </tr>
       </thead>
-      <tbody id="facturesTable">
+      <tbody id="facturesBody">
         <tr><td colspan="5">Chargement des factures...</td></tr>
       </tbody>
     </table>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
-    const baseUrl = 'https://workflows.aphelionxinnovations.com';
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA';
-    const ipp = new URLSearchParams(window.location.search).get('ipp');
-    let servicesList = [], selectedServices = [], lastCreatedFactureId = null;
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA";
+    const baseURL = "https://workflows.aphelionxinnovations.com";
+    const urlParams = new URLSearchParams(window.location.search);
+    const ipp = urlParams.get("ipp") || "IPP-1743516316438";
+
+    let selectedServices = [];
+    let lastFactureId = null;
 
     $(document).ready(() => {
       $('#services').select2({ placeholder: 'Sélectionner des services...' });
       fetchPatient();
       fetchServices();
-      loadFactures();
-
-      $('#services').on('change', function () {
-        selectedServices = $(this).val().map(id => servicesList.find(s => s.id == id));
-        updateTotal();
-      });
+      fetchFactures();
     });
 
-    function updateTotal() {
-      const total = selectedServices.reduce((sum, s) => sum + parseFloat(s.price), 0);
-      document.getElementById('total').textContent = total.toFixed(2);
-    }
-
     async function fetchPatient() {
-      const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${ipp}`, {
+      const res = await fetch(`${baseURL}/webhook/bill-get-patient?ipp=${ipp}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      for (const key in data) {
-        const el = document.getElementById(key);
-        if (el) el.textContent = data[key];
-      }
+      Object.keys(data).forEach(key => {
+        if (document.getElementById(key)) document.getElementById(key).textContent = data[key];
+      });
     }
 
     async function fetchServices() {
-      const res = await fetch(`${baseUrl}/webhook/tarifs`, {
+      const res = await fetch(`${baseURL}/webhook/tarifs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      servicesList = await res.json();
-      servicesList.forEach(s => {
-        const option = new Option(`${s.name} - ${s.price} MAD`, s.id);
-        $('#services').append(option);
+      const data = await res.json();
+      data.services.forEach(service => {
+        $('#services').append(new Option(`${service.name} - ${service.price} MAD`, service.id));
       });
     }
 
-    document.getElementById("createFacture").addEventListener("click", async () => {
-      const response = await fetch(`${baseUrl}/webhook/create-facture`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ipp,
-          mode_paiement: document.getElementById("modePaiement").value,
-          services: selectedServices.map((s) => s.id),
-        }),
-      });
-
-      const data = await response.json();
-      lastCreatedFactureId = data.facture_id;
-      alert("Facture créée !");
-      loadFactures();
+    $('#services').on('change', function () {
+      selectedServices = $(this).val().map(Number);
+      calculateTotal();
     });
 
-    document.getElementById("markPaid").addEventListener("click", async () => {
-      if (!lastCreatedFactureId) {
-        alert("Aucune facture récemment créée !");
-        return;
-      }
-
-      await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          facture_id: lastCreatedFactureId,
-          etat_paiement: "payé",
-        }),
-      });
-
-      alert(`Facture #${lastCreatedFactureId} marquée comme payée !`);
-      loadFactures();
-    });
-
-    async function loadFactures() {
-      const res = await fetch(`${baseUrl}/webhook/factures-by-ipp?ipp=${ipp}`, {
+    async function calculateTotal() {
+      const res = await fetch(`${baseURL}/webhook/tarifs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const list = await res.json();
-      const tbody = document.getElementById("facturesTable");
-      tbody.innerHTML = list.length === 0 ? '<tr><td colspan="5">Aucune facture</td></tr>' :
-        list.map(f => `<tr><td>${f.id}</td><td>${f.montant} MAD</td><td>${f.mode_paiement}</td><td>${f.etat_paiement}</td><td>${new Date(f.date_facturation).toLocaleString()}</td></tr>`).join('');
+      const data = await res.json();
+      let total = 0;
+      data.services.forEach(s => {
+        if (selectedServices.includes(s.id)) total += parseFloat(s.price);
+      });
+      document.getElementById("total").textContent = total.toFixed(2);
+    }
+
+    async function createFacture() {
+      const modePaiement = document.getElementById("modePaiement").value;
+      const res = await fetch(`${baseURL}/webhook/create-facture`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ ipp, mode_paiement: modePaiement, services: selectedServices })
+      });
+      const data = await res.json();
+      lastFactureId = data.facture_id;
+      alert("Facture créée avec succès");
+      fetchFactures();
+    }
+
+    async function markAsPaid() {
+      if (!lastFactureId) return alert("Créez une facture d'abord.");
+      await fetch(`${baseURL}/webhook/facture/update-payment-status`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ facture_id: lastFactureId, etat_paiement: "payé" })
+      });
+      alert("Statut mis à jour");
+      fetchFactures();
+    }
+
+    async function fetchFactures() {
+      const res = await fetch(`${baseURL}/webhook/facture/list?ipp=${ipp}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const tbody = document.getElementById("facturesBody");
+      tbody.innerHTML = "";
+      data.factures.forEach(f => {
+        const row = `<tr><td>${f.id}</td><td>${f.montant}</td><td>${f.mode_paiement}</td><td>${f.etat_paiement}</td><td>${f.date_facturation.split("T")[0]}</td></tr>`;
+        tbody.innerHTML += row;
+      });
     }
   </script>
 </body>
