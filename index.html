@@ -7,907 +7,133 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --primary-color: #5469d4;
-      --secondary-color: #7795f8;
-      --success-color: #3ecf8e;
-      --danger-color: #e25950;
-      --warning-color: #f8b653;
-      --info-color: #6baaee;
-      --light-color: #f8f9fb;
-      --dark-color: #212529;
-      --light-gray: #eaecef;
-      --border-radius: 0.75rem;
-      --box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
-      --transition: all 0.3s ease;
-    }
-
-    body {
-      background-color: #f9fafc;
-      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      padding: 0;
-      margin: 0;
-      min-height: 100vh;
-      color: #324054;
-    }
-
-    .app-container {
-      padding: 2rem;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--light-gray);
-    }
-
-    .page-title {
-      color: var(--primary-color);
-      font-weight: 600;
-      margin: 0;
-      font-size: 1.75rem;
-    }
-
-    .clinic-logo {
-      font-size: 1.2rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      color: var(--primary-color);
-    }
-
-    .clinic-logo i {
-      margin-right: 0.5rem;
-      font-size: 1.5rem;
-    }
-
-    .card {
-      border: none;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      margin-bottom: 1.5rem;
-      transition: var(--transition);
-      overflow: hidden;
-    }
-
-    .card:hover {
-      box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
-    }
-
-    .card-header {
-      background-color: #fff;
-      border-bottom: 1px solid var(--light-gray);
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .card-title {
-      font-weight: 600;
-      margin: 0;
-      color: var(--dark-color);
-      font-size: 1.1rem;
-    }
-
-    .card-body {
-      padding: 1.5rem;
-    }
-
-    .card-icon {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      color: white;
-      font-size: 1.2rem;
-    }
-
-    .icon-patient {
-      background: linear-gradient(45deg, #6772e5, #5469d4);
-    }
-
-    .icon-invoice {
-      background: linear-gradient(45deg, #3ecf8e, #2fbe7f);
-    }
-
-    .icon-history {
-      background: linear-gradient(45deg, #f8b653, #f7a429);
-    }
-
-    .patient-info {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-
-    .patient-info-item {
-      margin-bottom: 0.5rem;
-    }
-
-    .patient-info-label {
-      color: #8792a2;
-      font-size: 0.875rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .patient-info-value {
-      font-weight: 500;
-      font-size: 1rem;
-    }
-
-    .select2-container {
-      width: 100% !important;
-    }
-
-    .select2-container--default .select2-selection--multiple {
-      border-color: #ced4da;
-      border-radius: 0.375rem;
-      min-height: 38px;
-    }
-
-    .select2-container--default.select2-container--focus .select2-selection--multiple {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 0.25rem rgba(84, 105, 212, 0.25);
-    }
-
-    .select2-container--default .select2-selection--multiple .select2-selection__choice {
-      background-color: var(--primary-color);
-      border: none;
-      color: white;
-      border-radius: 20px;
-      padding: 2px 10px;
-    }
-
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-      color: white;
-      margin-right: 5px;
-    }
-
-    .form-control, .form-select {
-      border-radius: 0.5rem;
-      padding: 0.6rem 1rem;
-      border: 1px solid #dfe3e8;
-    }
-
-    .form-control:focus, .form-select:focus {
-      box-shadow: 0 0 0 0.25rem rgba(84, 105, 212, 0.25);
-      border-color: var(--primary-color);
-    }
-
-    .form-group label {
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-      color: #506690;
-    }
-
-    .btn {
-      border-radius: 0.5rem;
-      padding: 0.6rem 1.5rem;
-      font-weight: 500;
-      transition: var(--transition);
-    }
-
-    .btn-primary {
-      background-color: var(--primary-color);
-      border-color: var(--primary-color);
-    }
-
-    .btn-primary:hover, .btn-primary:focus {
-      background-color: #465bbf;
-      border-color: #465bbf;
-    }
-
-    .btn-success {
-      background-color: var(--success-color);
-      border-color: var(--success-color);
-    }
-
-    .btn-success:hover, .btn-success:focus {
-      background-color: #2fbe7f;
-      border-color: #2fbe7f;
-    }
-
-    .btn-outline-success {
-      color: var(--success-color);
-      border-color: var(--success-color);
-    }
-
-    .btn-outline-success:hover, .btn-outline-success:focus {
-      background-color: var(--success-color);
-      border-color: var(--success-color);
-      color: white;
-    }
-
-    .badge {
-      padding: 0.5rem 0.75rem;
-      border-radius: 20px;
-      font-weight: 500;
-      font-size: 0.875rem;
-    }
-
-    .badge-paid {
-      background-color: rgba(62, 207, 142, 0.15);
-      color: var(--success-color);
-    }
-
-    .badge-pending {
-      background-color: rgba(248, 182, 83, 0.15);
-      color: var(--warning-color);
-    }
-
-    .total-price {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--primary-color);
-    }
-
-    .price-card {
-      background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-      color: white;
-      border-radius: var(--border-radius);
-      padding: 1.5rem;
-      text-align: center;
-      margin-top: 1rem;
-    }
-
-    .price-label {
-      font-size: 1rem;
-      opacity: 0.9;
-    }
-
-    .price-value {
-      font-size: 2rem;
-      font-weight: 700;
-      margin: 0.5rem 0;
-    }
-
-    .price-currency {
-      font-size: 1rem;
-      font-weight: 400;
-      margin-left: 0.25rem;
-    }
-
-    .table {
-      border-collapse: separate;
-      border-spacing: 0;
-      width: 100%;
-    }
-
-    .table th {
-      background-color: #f8f9fa;
-      color: #506690;
-      font-weight: 600;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .table th:first-child {
-      border-top-left-radius: 0.5rem;
-    }
-
-    .table th:last-child {
-      border-top-right-radius: 0.5rem;
-    }
-
-    .table td, .table th {
-      padding: 1rem;
-      vertical-align: middle;
-      text-align: center;
-      border-bottom: 1px solid var(--light-gray);
-    }
-
-    .payment-method {
-      display: inline-flex;
-      align-items: center;
-      font-weight: 500;
-    }
-
-    .payment-method i {
-      margin-right: 0.5rem;
-      font-size: 1.1rem;
-    }
-
-    .alert {
-      border-radius: var(--border-radius);
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
-      border: none;
-      display: none;
-    }
-
-    .alert-danger {
-      background-color: rgba(226, 89, 80, 0.15);
-      color: var(--danger-color);
-    }
-
-    .alert-success {
-      background-color: rgba(62, 207, 142, 0.15);
-      color: var(--success-color);
-    }
-
-    .alert-warning {
-      background-color: rgba(248, 182, 83, 0.15);
-      color: var(--warning-color);
-    }
-
-    .loader-container {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(255, 255, 255, 0.8);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .loader {
-      width: 50px;
-      height: 50px;
-      border: 3px solid rgba(84, 105, 212, 0.2);
-      border-radius: 50%;
-      border-top-color: var(--primary-color);
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: #8792a2;
-    }
-
-    .empty-state i {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      opacity: 0.5;
-    }
-
-    .empty-state-message {
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-    }
-
-    .empty-state-description {
-      font-size: 0.9rem;
-      max-width: 400px;
-      margin: 0 auto;
-    }
-
-    @media (max-width: 768px) {
-      .app-container {
-        padding: 1rem;
-      }
-
-      .patient-info {
-        grid-template-columns: 1fr;
-      }
-
-      .card-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .card-title {
-        margin-bottom: 0.5rem;
-      }
-    }
-  </style>
 </head>
 <body>
-  <div class="loader-container">
-    <div class="loader"></div>
-  </div>
-
-  <div class="app-container">
-    <div class="page-header">
-      <h1 class="page-title">Dashboard de Facturation</h1>
-      <div class="clinic-logo">
-        <i class="fas fa-hospital-user"></i>
-        MediClinic
+  <div class="container mt-5">
+    <h2 class="text-primary text-center">Dashboard de Facturation</h2>
+    <div class="card mt-4">
+      <div class="card-body">
+        <h5>Patient:</h5>
+        <p><strong>Nom:</strong> <span id="nom">-</span></p>
+        <p><strong>Prénom:</strong> <span id="prenom">-</span></p>
+        <p><strong>CIN:</strong> <span id="cin">-</span></p>
       </div>
     </div>
-
-    <div id="alertContainer" class="alert" role="alert"></div>
-
-    <div class="card">
-      <div class="card-header">
-        <h5 class="card-title">Informations du Patient</h5>
-        <div class="card-icon icon-patient">
-          <i class="fas fa-user"></i>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="patient-info">
-          <div class="patient-info-item">
-            <div class="patient-info-label">Nom</div>
-            <div class="patient-info-value" id="nom">-</div>
-          </div>
-          <div class="patient-info-item">
-            <div class="patient-info-label">Prénom</div>
-            <div class="patient-info-value" id="prenom">-</div>
-          </div>
-          <div class="patient-info-item">
-            <div class="patient-info-label">CIN</div>
-            <div class="patient-info-value" id="cin">-</div>
-          </div>
-          <div class="patient-info-item">
-            <div class="patient-info-label">Téléphone</div>
-            <div class="patient-info-value" id="telephone">-</div>
-          </div>
-          <div class="patient-info-item">
-            <div class="patient-info-label">Adresse</div>
-            <div class="patient-info-value" id="adresse">-</div>
-          </div>
-          <div class="patient-info-item">
-            <div class="patient-info-label">Ville</div>
-            <div class="patient-info-value" id="ville">-</div>
-          </div>
-          <div class="patient-info-item">
-            <div class="patient-info-label">Date de Naissance</div>
-            <div class="patient-info-value" id="date_naissance">-</div>
-          </div>
-          <div class="patient-info-item">
-            <div class="patient-info-label">Sexe</div>
-            <div class="patient-info-value" id="sexe">-</div>
-          </div>
-          <div class="patient-info-item">
-            <div class="patient-info-label">Mutuelle</div>
-            <div class="patient-info-value" id="mutuelle">-</div>
-          </div>
-        </div>
-      </div>
+    <div class="mt-4">
+      <label for="services" class="form-label">Services</label>
+      <select class="form-select" id="services" multiple></select>
     </div>
-
-    <div class="card">
-      <div class="card-header">
-        <h5 class="card-title">Nouvelle Facture</h5>
-        <div class="card-icon icon-invoice">
-          <i class="fas fa-file-invoice"></i>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-8">
-            <div class="form-group mb-4">
-              <label for="services"><i class="fas fa-list-check me-2"></i>Services Disponibles</label>
-              <select class="form-select" id="services" multiple></select>
-            </div>
-
-            <div class="form-group mb-4">
-              <label for="modePaiement"><i class="fas fa-credit-card me-2"></i>Mode de Paiement</label>
-              <select class="form-select" id="modePaiement">
-                <option value="espèces">Espèces</option>
-                <option value="carte">Carte Bancaire</option>
-                <option value="assurance">Assurance</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="price-card">
-              <div class="price-label">Montant Total</div>
-              <div class="price-value"><span id="total">0.00</span><span class="price-currency">MAD</span></div>
-              <button id="creerFacture" class="btn btn-light w-100 mt-3">
-                <i class="fas fa-plus-circle me-2"></i>Créer Facture
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="mt-3">
+      <label for="modePaiement" class="form-label">Mode de Paiement</label>
+      <select class="form-select" id="modePaiement">
+        <option value="espèces">Espèces</option>
+        <option value="carte">Carte Bancaire</option>
+        <option value="assurance">Assurance</option>
+      </select>
     </div>
-
-    <div class="card">
-      <div class="card-header">
-        <h5 class="card-title">Historique des Factures</h5>
-        <div class="card-icon icon-history">
-          <i class="fas fa-history"></i>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Montant</th>
-                <th>Mode de Paiement</th>
-                <th>Statut</th>
-                <th>Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="factureBody">
-              <tr>
-                <td colspan="6" class="text-center">Chargement des factures...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div class="mt-3">
+      <p><strong>Total:</strong> <span id="total">0.00</span> MAD</p>
+      <button id="creerFacture" class="btn btn-primary">Créer Facture</button>
+    </div>
+    <div class="mt-5">
+      <h5>Historique des Factures</h5>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Montant</th>
+            <th>Mode de Paiement</th>
+            <th>Statut</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="factureBody">
+          <tr><td colspan="5" class="text-center">Chargement des factures...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
-    // Configuration
-    const baseUrl = "https://workflows.aphelionxinnovations.com"; // Replace with your base URL
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA"; // Use your token
-
-    // Get IPP from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const ipp = urlParams.get("ipp") || "IPP-1743516316438"; // Use a default IPP for testing
-
-    // Helper functions (keep these as they are)
-    function showLoader() {
-      document.querySelector('.loader-container').style.display = 'flex';
+    const baseUrl = "https://workflows.aphelionxinnovations.com";
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA";
+    const ipp = new URLSearchParams(window.location.search).get("ipp");
+    if (!ipp) {
+      alert("IPP manquant dans l'URL.");
+      throw new Error("IPP is missing");
     }
 
-    function hideLoader() {
-      document.querySelector('.loader-container').style.display = 'none';
-    }
-
-    function showAlert(message, type = 'danger') {
-      const alertElement = document.getElementById('alertContainer');
-      alertElement.className = `alert alert-${type}`;
-      alertElement.innerHTML = `
-        <i class="${type === 'danger' ? 'fas fa-exclamation-circle' :
-                  type === 'success' ? 'fas fa-check-circle' :
-                  'fas fa-exclamation-triangle'} me-2"></i>
-        ${message}
-      `;
-      alertElement.style.display = 'block';
-
-      // Scroll to alert
-      alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      // Auto-hide after 5 seconds
-      setTimeout(() => {
-        alertElement.style.display = 'none';
-      }, 5000);
-    }
-
-    // API service layer
-    const apiService = {
-      async fetchPatient(patientIpp) {
-        try {
-          const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement du patient`);
-          }
-
-          return await res.json();
-        } catch (error) {
-          console.error("Patient fetch error:", error);
-          throw error;
-        }
-      },
-
-      async fetchServices() {
-        try {
-          const res = await fetch(`${baseUrl}/webhook/tarifs`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement des services`);
-          }
-
-          const responseData = await res.json(); // Get the full response array
-          console.log("Full Services API Response:", responseData); // Log the full response for debugging
-
-          // **Extract the services array from the nested structure:**
-          const servicesArray = responseData[0]?.services || []; // Access the first element, then 'services', with safety checks
-
-          return { services: servicesArray }; // Return in the format expected by the rest of your code
-
-        } catch (error) {
-          console.error("Services fetch error:", error);
-          throw error;
-        }
-      },
-
-      async createInvoice(data) {
-        try {
-          const res = await fetch(`${baseUrl}/webhook/create-facture`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec de la création de la facture`);
-          }
-
-          return await res.json();
-        } catch (error) {
-          console.error("Invoice creation error:", error);
-          throw error;
-        }
-      },
-
-      async getInvoicesByIpp(patientIpp) {
-        try {
-          const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement de l'historique des factures`);
-          }
-
-          return await res.json();
-        } catch (error)
-          console.error("Invoices fetch error:", error);
-          throw error;
-        }
-      },
-
-      async updatePaymentStatus(factureId, etat_paiement) {
-        try {
-          const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) // API expects lowercase status
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec de la mise à jour du statut de paiement`);
-          }
-
-          return await res.json();
-        } catch (error) {
-          console.error("Payment status update error:", error);
-          throw error;
-        }
-      }
-    };
-
-    // Format payment mode display and icons (keep these as they are)
-    function formatPaymentMode(mode) {
-      switch(mode.toLowerCase()) {
-        case 'espèces': return 'Espèces';
-        case 'carte': return 'Carte Bancaire';
-        case 'assurance': return 'Assurance';
-        default: return mode;
+    async function fetchPatient() {
+      const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${ipp}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      for (const key in data) {
+        document.getElementById(key)?.textContent = data[key];
       }
     }
 
-    function getPaymentIcon(mode) {
-      switch(mode.toLowerCase()) {
-        case 'espèces': return 'fas fa-money-bill-wave';
-        case 'carte': return 'fas fa-credit-card';
-        case 'assurance': return 'fas fa-shield-alt';
-        default: return 'fas fa-circle';
-      }
-    }
-
-    // UI functions (keep most of these, adjust where necessary)
-    async function loadPatientInfo() {
-      if (!ipp) {
-        showAlert("IPP manquant dans l'URL. Veuillez spécifier un IPP valide.");
-        return;
-      }
-
-      showLoader();
-      try {
-        const patientData = await apiService.fetchPatient(ipp);
-
-        // Update patient info fields - adapt to API response if different
-        for (const key in patientData) {
-          const element = document.getElementById(key);
-          if (element) {
-            element.textContent = patientData[key] || '-';
-          }
-        }
-      } catch (error) {
-        showAlert(`Erreur lors du chargement du patient: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
-    }
-
-    async function loadServices() {
-      showLoader();
-      try {
-        const { services } = await apiService.fetchServices();
-        const servicesSelect = document.getElementById("services");
-        console.log("servicesSelect element:", servicesSelect);
-        servicesSelect.innerHTML = '';
-
-        if (Array.isArray(services)) {
-          services.forEach((service) => {
-            const option = new Option(
-              `${service.name} - ${service.price} MAD`,
-              JSON.stringify({id: service.id, name: service.name, price: service.price})
-            );
-            console.log("Created option:", option);
-            servicesSelect.append(option);
-            console.log("Appended option to servicesSelect");
-          });
-        } else {
-          console.error("Error: services is not an array:", services);
-        }
-
-        // Initialize Select2 AFTER options are appended:
-        $('#services').select2({
-          placeholder: "Sélectionner des services...",
-          allowClear: true,
-          templateResult: formatService,
-          templateSelection: formatServiceSelection
-        });
-
-      } catch (error) {
-        showAlert(`Erreur lors du chargement des services: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
-    }
-
-    function formatService(service) {
-      if (!service.id) return service.text;
-
-      const serviceData = JSON.parse(service.id);
-      return $(`
-        <div class="d-flex justify-content-between align-items-center">
-          <span>${serviceData.name}</span>
-          <span class="badge bg-primary">${serviceData.price} MAD</span>
-        </div>
-      `);
-    }
-
-    function formatServiceSelection(service) {
-      if (!service.id) return service.text;
-
-      const serviceData = JSON.parse(service.id);
-      return serviceData.name;
+    async function fetchServices() {
+      const res = await fetch(`${baseUrl}/webhook/tarifs`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const { services } = await res.json();
+      services.forEach((s) => {
+        const option = new Option(`${s.name} - ${s.price} MAD`, JSON.stringify(s));
+        document.getElementById("services").append(option);
+      });
+      $('#services').select2({ placeholder: "Sélectionner des services..." });
     }
 
     function updateTotal() {
-      const selectedServices = $('#services').select2("data");
-      const total = selectedServices.reduce((sum, service) => {
-        const serviceData = JSON.parse(service.id);
-        return sum + parseFloat(serviceData.price);
-      }, 0);
-
+      const selected = $('#services').select2("data");
+      const total = selected.reduce((sum, s) => sum + parseFloat(JSON.parse(s.id).price), 0);
       document.getElementById("total").textContent = total.toFixed(2);
     }
 
-    async function createInvoice() {
-      const selectedServices = $('#services').select2("data");
-
-      // Validation
-      if (selectedServices.length === 0) {
-        showAlert("Veuillez sélectionner au moins un service.", "warning");
-        return;
-      }
-
-      // Prepare data
-      const serviceIds = selectedServices.map(service => JSON.parse(service.id).id);
-      const paymentMode = document.getElementById("modePaiement").value;
-      const totalAmount = selectedServices.reduce((sum, service) => {
-        return sum + parseFloat(JSON.parse(service.id).price);
-      }, 0);
-
-      // Create invoice
-      showLoader();
-      try {
-        const invoiceResponse = await apiService.createInvoice({
-          ipp: ipp,
-          mode_paiement: paymentMode,
-          services: serviceIds
-        });
-
-        // Reset form
-        $('#services').val(null).trigger('change');
-        updateTotal();
-
-        // Show success message
-        showAlert("Facture créée avec succès!", "success");
-
-        // Refresh invoice list
-        await loadInvoices();
-      } catch (error) {
-        showAlert(`Erreur lors de la création de la facture: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
+    async function createFacture() {
+      const selected = $('#services').select2("data").map(s => JSON.parse(s.id).id);
+      const mode = document.getElementById("modePaiement").value;
+      const total = $('#services').select2("data").reduce((sum, s) => sum + parseFloat(JSON.parse(s.id).price), 0);
+      await fetch(`${baseUrl}/webhook/create-facture`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ipp, mode_paiement: mode, services: selected, total }),
+      });
+      loadFactures();
     }
 
-
-    async function loadInvoices() {
-      if (!ipp) return;
-
-      showLoader();
-      try {
-        const invoices = await apiService.getInvoicesByIpp(ipp);
-        const tableBody = document.getElementById("factureBody");
-
-        // Clear existing rows
-        tableBody.innerHTML = '';
-
-        // Check if there are invoices
-        if (!invoices || invoices.length === 0) {
-          tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>';
-          return;
-        }
-
-        // Populate the table with invoices - Adapt to API response, assuming fields like 'id', 'montant', 'mode_paiement', 'etat_paiement', 'date_facturation'
-        invoices.forEach(invoice => {
-          const row = document.createElement("tr");
-
-          row.innerHTML = `
-            <td>${invoice.id}</td>
-            <td>${invoice.montant} MAD</td>
-            <td class="payment-method"><i class="${getPaymentIcon(invoice.mode_paiement)} me-2"></i>${formatPaymentMode(invoice.mode_paiement)}</td>
-            <td><span class="badge ${invoice.etat_paiement === 'payé' ? 'badge-paid' : 'badge-pending'}">${invoice.etat_paiement === 'payé' ? 'Payé' : 'En attente'}</span></td> <!-- Adapt status display -->
-            <td>${new Date(invoice.date_facturation).toLocaleString()}</td>
-            <td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${invoice.id}, '${invoice.etat_paiement === 'payé' ? 'en attente' : 'payé'}')">${invoice.etat_paiement === 'payé' ? 'Marquer comme en attente' : 'Marquer comme payé'}</button></td> <!-- Adapt status update values -->
-          `;
-          tableBody.append(row);
-        });
-      } catch (error) {
-        showAlert(`Erreur lors du chargement des factures: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
+    async function loadFactures() {
+      const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${ipp}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const factures = await res.json();
+      const body = document.getElementById("factureBody");
+      body.innerHTML = "";
+      factures.forEach((f) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${f.id}</td>
+          <td>${f.montant} MAD</td>
+          <td>${f.mode_paiement}</td>
+          <td>${f.etat_paiement}</td>
+          <td>${new Date(f.date_facturation).toLocaleString()}</td>
+        `;
+        body.appendChild(tr);
+      });
     }
 
-    async function updateInvoiceStatus(factureId, status) {
-      showLoader();
-      try {
-        await apiService.updatePaymentStatus(factureId, status);
-        showAlert("Statut mis à jour avec succès!", "success");
-        loadInvoices();
-      } catch (error) {
-        showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
-    }
+    document.getElementById("services").addEventListener("change", updateTotal);
+    document.getElementById("creerFacture").addEventListener("click", createFacture);
 
-    // Event listeners
-    $(document).ready(function () {
-      loadPatientInfo();
-      loadServices();
-      loadInvoices();
-
-      $('#services').on('change', updateTotal);
-      $('#creerFacture').on('click', createInvoice);
-    });
+    fetchPatient();
+    fetchServices();
+    loadFactures();
   </script>
 </body>
 </html>
