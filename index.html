@@ -103,7 +103,8 @@
         if (!res.ok) throw new Error("Patient fetch failed");
         const data = await res.json();
         for (const key in data) {
-          document.getElementById(key)?.textContent = data[key];
+          const el = document.getElementById(key);
+          if (el) el.textContent = data[key];
         }
       } catch (e) {
         alert("Erreur lors du chargement du patient.");
@@ -121,7 +122,7 @@
         const option = new Option(`${s.name} - ${s.price} MAD`, JSON.stringify(s));
         document.getElementById("services").append(option);
       });
-      $('#services').select2({ placeholder: "Sélectionner des services...", escapeMarkup: m => m });
+      $('#services').select2({ placeholder: "Sélectionner des services..." });
     }
 
     function updateTotal() {
@@ -164,7 +165,7 @@
       const factures = await res.json();
       const body = document.getElementById("factureBody");
       body.innerHTML = "";
-      if (factures.length === 0) {
+      if (!factures || factures.length === 0) {
         body.innerHTML = `<tr><td colspan='6'>Aucune facture trouvée.</td></tr>`;
         return;
       }
