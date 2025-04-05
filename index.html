@@ -666,7 +666,7 @@
           }
 
           return await res.json();
-        } catch (error) {
+        } catch (error)
           console.error("Invoices fetch error:", error);
           throw error;
         }
@@ -745,31 +745,31 @@
       try {
         const { services } = await apiService.fetchServices();
         const servicesSelect = document.getElementById("services");
-        console.log("servicesSelect element:", servicesSelect); // ADD THIS LINE
+        console.log("servicesSelect element:", servicesSelect);
         servicesSelect.innerHTML = '';
 
-        if (Array.isArray(services)) { // ADD THIS CHECK
+        if (Array.isArray(services)) {
           services.forEach((service) => {
             const option = new Option(
               `${service.name} - ${service.price} MAD`,
               JSON.stringify({id: service.id, name: service.name, price: service.price})
             );
-            console.log("Created option:", option); // ADD THIS LINE
+            console.log("Created option:", option);
             servicesSelect.append(option);
-            console.log("Appended option to servicesSelect"); // ADD THIS LINE
+            console.log("Appended option to servicesSelect");
           });
         } else {
-          console.error("Error: services is not an array:", services); // Log if not an array
+          console.error("Error: services is not an array:", services);
         }
 
-
-        // Initialize Select2
+        // Initialize Select2 AFTER options are appended:
         $('#services').select2({
           placeholder: "Sélectionner des services...",
           allowClear: true,
           templateResult: formatService,
           templateSelection: formatServiceSelection
         });
+
       } catch (error) {
         showAlert(`Erreur lors du chargement des services: ${error.message}`);
       } finally {
