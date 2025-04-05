@@ -848,16 +848,194 @@
       }
     }
     
-    async function loadInvoices() {
-      if (!ipp) return;
-      
-      showLoader();
-      try {
-        const invoices = await apiService.getInvoicesByIpp(ipp);
-        const tableBody = document.getElementById("factureBody");
-        
-        // Clear existing rows
-        tableBody.innerHTML = '';
-        
-        // Check if there are invoices
-        if (!invoices || invoices.length === 0
+// UI functions
+async function loadPatientInfo() {
+  if (!ipp) {
+    showAlert("IPP manquant dans l'URL. Veuillez spécifier un IPP valide.");
+    return;
+  }
+
+  showLoader();
+  try {
+    const patientData = await apiService.fetchPatient(ipp);
+
+    // Update patient info fields
+    for (const key in patientData) {
+      const element = document.getElementById(key);
+      if (element) {
+        element.textContent = patientData[key] || '-';
+      }
+    }
+  } catch (error) {
+    showAlert(`Erreur lors du chargement du patient: ${error.message}`);
+  } finally {
+    hideLoader();
+  }
+}
+
+async function loadServices() {
+  showLoader();
+  try {
+    const { services } = await apiService.fetchServices();
+    const servicesSelect = document.getElementById("services");
+
+    // Clear existing options
+    servicesSelect.innerHTML = '';
+
+    // Add new options
+    services.forEach((service) => {
+      const option = new Option(
+        `${service.name} - ${service.price} MAD`,
+        JSON.stringify(service)
+      );
+      servicesSelect.append(option);
+    });
+
+    // Initialize Select2
+    $('#services').select2({
+      placeholder: "Sélectionner des services...",
+      allowClear: true,
+      templateResult: formatService,
+      templateSelection: formatServiceSelection
+    });
+  } catch (error) {
+    showAlert(`Erreur lors du chargement des services: ${error.message}`);
+  } finally {
+    hideLoader();
+  }
+}
+
+function formatService(service) {
+  if (!service.id) return service.text;
+
+  const serviceData = JSON.parse(service.id);
+  return $(`
+    <div class="d-flex justify-content-between align-items-center">
+      <span>${serviceData.name}</span>
+      <span class="badge bg-primary">${serviceData.price} MAD</span>
+    </div>
+  `);
+}
+
+function formatServiceSelection(service) {
+  if (!service.id) return service.text;
+
+  const serviceData = JSON.parse(service.id);
+  return serviceData.name;
+}
+
+function updateTotal() {
+  const selectedServices = $('#services').select2("data");
+  const total = selectedServices.reduce((sum, service) => {
+    const serviceData = JSON.parse(service.id);
+    return sum + parseFloat(serviceData.price);
+  }, 0);
+
+  document.getElementById("total").textContent = total.toFixed(2);
+}
+
+async function createInvoice() {
+  const selectedServices = $('#services').select2("data");
+
+  // Validation
+  if (selectedServices.length === 0) {
+    showAlert("Veuillez sélectionner au moins un service.", "warning");
+    return;
+  }
+
+  // Prepare data
+  const serviceIds = selectedServices.map(service => JSON.parse(service.id).id);
+  const paymentMode = document.getElementById("modePaiement").value;
+  const totalAmount = selectedServices.reduce((sum, service) => {
+    return sum + parseFloat(JSON.parse(service.id).price);
+  }, 0);
+
+  // Create invoice
+  showLoader();
+  try {
+    await apiService.createInvoice({
+      ipp,
+      mode_paiement: paymentMode,
+      services: serviceIds,
+      total: totalAmount
+    });
+
+    // Reset form
+    $('#services').val(null).trigger('change');
+    updateTotal();
+
+    // Show success message
+    showAlert("Facture créée avec succès!", "success");
+
+    // Refresh invoice list
+    await loadInvoices();
+  } catch (error) {
+    showAlert(`Erreur lors de la création de la facture: ${error.message}`);
+  } finally {
+    hideLoader();
+  }
+}
+
+async function loadInvoices() {
+  if (!ipp) return;
+
+  showLoader();
+  try {
+    const invoices = await apiService.getInvoicesByIpp(ipp);
+    const tableBody = document.getElementById("factureBody");
+
+    // Clear existing rows
+    tableBody.innerHTML = '';
+
+    // Check if there are invoices
+    if (!invoices || invoices.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>';
+      return;
+    }
+
+    // Populate the table with invoices
+    invoices.forEach(invoice => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${invoice.id}</td>
+        <td>${invoice.montant} MAD</td>
+        <td class="payment-method"><i class="${getPaymentIcon(invoice.mode_paiement)} me-2"></i>${formatPaymentMode(invoice.mode_paiement)}</td>
+        <td><span class="badge ${invoice.etat_paiement === 'Payé' ? 'badge-paid' : 'badge-pending'}">${invoice.etat_paiement}</span></td>
+        <td>${new Date(invoice.date_facturation).toLocaleString()}</td>
+        <td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${invoice.id}, '${invoice.etat_paiement === 'Payé' ? 'En attente' : 'Payé'}')">${invoice.etat_paiement === 'Payé' ? 'Marquer comme en attente' : 'Marquer comme payé'}</button></td>
+      `;
+      tableBody.append(row);
+    });
+  } catch (error) {
+    showAlert(`Erreur lors du chargement des factures: ${error.message}`);
+  } finally {
+    hideLoader();
+  }
+}
+
+async function updateInvoiceStatus(factureId, status) {
+  showLoader();
+  try {
+    await apiService.updatePaymentStatus(factureId, status);
+    showAlert("Statut mis à jour avec succès!", "success");
+    loadInvoices();
+  } catch (error) {
+    showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`);
+  } finally {
+    hideLoader();
+  }
+}
+
+// Event listeners
+$(document).ready(function () {
+  loadPatientInfo();
+  loadServices();
+  loadInvoices();
+
+  $('#services').on('change', updateTotal);
+  $('#creerFacture').on('click', createInvoice);
+});
+</script>
+</body>
+</html>
