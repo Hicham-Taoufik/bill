@@ -1,4 +1,4 @@
-.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -101,82 +101,121 @@
 
     // API service layer
     const apiService = {
-      async fetchPatient(patientIpp) { /* Keep as is */
-        try { const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Patient fetch error:", e); throw e; } },
-
-      // --- FINAL Corrected fetchServices ---
-      async fetchServices() {
-        try {
-          const res = await fetch(`${baseUrl}/webhook/tarifs`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement des services`);
-          }
-
-          // responseData should be an OBJECT like { status: '...', services: [...] }
-          const responseData = await res.json();
-          console.log("Full Services API Response (Object expected):", responseData);
-
-          // --- Corrected Extraction Logic for OBJECT ---
-          let servicesArray = []; // Default to empty array
-
-          // Check if responseData is an OBJECT and has the 'services' property which is an array.
-          if (typeof responseData === 'object' &&
-              responseData !== null &&
-              Array.isArray(responseData.services))
-          {
-              console.log("Extraction: responseData is an object with a services array.");
-              servicesArray = responseData.services; // Assign directly from the object's property
-          } else {
-              // Log specifically why the extraction failed
-              console.error("Extraction Failed: responseData is not an object with a services array.",
-                  "Type:", typeof responseData,
-                  "Is Null:", responseData === null,
-                  "Has Services Array:", Array.isArray(responseData?.services) // Check property existence safely
-              );
-          }
-          // --- End Corrected Extraction Logic for OBJECT ---
-
-          console.log("Final Extracted servicesArray before return:", servicesArray);
-
-          // Return the object containing the correctly extracted services array
-          return { services: servicesArray };
-
-        } catch (error) {
-          console.error("Services fetch error:", error);
-          throw error;
-        }
-      },
-      // --- End FINAL Corrected fetchServices ---
-
-      async createInvoice(data) { /* Keep as is */
-        try { const res = await fetch(`${baseUrl}/webhook/create-facture`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Invoice creation error:", e); throw e; } },
-      async getInvoicesByIpp(patientIpp) { /* Keep as is */
-        try { const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Invoices fetch error:", e); throw e; } },
-      async updatePaymentStatus(factureId, etat_paiement) { /* Keep as is */
-        try { const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Payment status update error:", e); throw e; } }
+      async fetchPatient(patientIpp) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Patient fetch error:", e); throw e; } },
+      async fetchServices() { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/tarifs`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } const d = await res.json(); console.log("Full Services API Response (Object expected):", d); let s = []; if (typeof d === 'object' && d !== null && Array.isArray(d.services)) { console.log("Extraction: OK"); s = d.services; } else { console.error("Extraction Failed: Invalid structure.", "Type:", typeof d, "Is Null:", d === null, "Has Array:", Array.isArray(d?.services)); } console.log("Final Extracted servicesArray:", s); return { services: s }; } catch (e) { console.error("Services fetch error:", e); throw e; } },
+      async createInvoice(data) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/create-facture`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Invoice creation error:", e); throw e; } },
+      async getInvoicesByIpp(patientIpp) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Invoices fetch error:", e); throw e; } }, // Note: This still returns the OBJECT {status: ..., factures: ...}
+      async updatePaymentStatus(factureId, etat_paiement) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Payment status update error:", e); throw e; } }
     };
 
     // Formatters
-    function formatPaymentMode(mode) { /* Keep as is */ switch(mode.toLowerCase()){case'espèces':return'Espèces';case'carte':return'Carte Bancaire';case'assurance':return'Assurance';default:return mode;} }
-    function getPaymentIcon(mode) { /* Keep as is */ switch(mode.toLowerCase()){case'espèces':return'fas fa-money-bill-wave';case'carte':return'fas fa-credit-card';case'assurance':return'fas fa-shield-alt';default:return'fas fa-circle';} }
-    function formatService(service) { /* Keep as is */ if(!service.id){return service.text;}try{const d=JSON.parse(service.id);if(d&&d.name&&d.price){return $(`<div class="d-flex justify-content-between align-items-center"><span>${d.name}</span><span class="badge bg-primary">${parseFloat(d.price).toFixed(2)} MAD</span></div>`);}else{console.warn("formatService: Invalid data",service.id);return service.text;}}catch(e){console.error("formatService Error:",e,service.id);return service.text;} }
-    function formatServiceSelection(service) { /* Keep as is */ if(!service.id||!service.element){return service.text;}try{const d=JSON.parse(service.element.value);if(d&&d.name){return d.name;}else{console.warn("formatServiceSelection: Invalid data",service.element.value);return service.text;}}catch(e){console.error("formatServiceSelection Error:",e,service.element.value);return service.text;} }
+    function formatPaymentMode(mode) { /* ... */ switch(mode.toLowerCase()){case'espèces':return'Espèces';case'carte':return'Carte Bancaire';case'assurance':return'Assurance';default:return mode;} }
+    function getPaymentIcon(mode) { /* ... */ switch(mode.toLowerCase()){case'espèces':return'fas fa-money-bill-wave';case'carte':return'fas fa-credit-card';case'assurance':return'fas fa-shield-alt';default:return'fas fa-circle';} }
+    function formatService(service) { /* ... */ if(!service.id){return service.text;}try{const d=JSON.parse(service.id);if(d&&d.name&&d.price){return $(`<div class="d-flex justify-content-between align-items-center"><span>${d.name}</span><span class="badge bg-primary">${parseFloat(d.price).toFixed(2)} MAD</span></div>`);}else{console.warn("formatService: Invalid data",service.id);return service.text;}}catch(e){console.error("formatService Error:",e,service.id);return service.text;} }
+    function formatServiceSelection(service) { /* ... */ if(!service.id||!service.element){return service.text;}try{const d=JSON.parse(service.element.value);if(d&&d.name){return d.name;}else{console.warn("formatServiceSelection: Invalid data",service.element.value);return service.text;}}catch(e){console.error("formatServiceSelection Error:",e,service.element.value);return service.text;} }
 
     // UI functions
-    async function loadPatientInfo() { /* Keep as is */ if(!ipp){showAlert("IPP manquant...");return;} showLoader();try{const d=await apiService.fetchPatient(ipp);console.log("Patient API Response:",d);for(const k in d){const el=document.getElementById(k);if(el){el.textContent=d[k]||'-';}}}catch(e){showAlert(`Erreur patient: ${e.message}`);}finally{hideLoader();} }
-    async function loadServices() { /* Keep as is - uses corrected fetchServices */
-      showLoader(); try { const r = await apiService.fetchServices(); console.log("Result received by loadServices:", r); const s = r?.services; const sel = document.getElementById("services"); console.log("servicesSelect element:", sel); if (!sel) { console.error("Fatal: #services not found"); showAlert("Erreur: Liste services non trouvée."); hideLoader(); return; } sel.innerHTML = ''; if (Array.isArray(s)) { console.log(`Populating ${s.length} services.`); s.forEach(svc => { if (svc && typeof svc.id !== 'undefined' && svc.name && svc.price) { const opt = new Option(`${svc.name} - ${svc.price} MAD`, JSON.stringify({ id: svc.id, name: svc.name, price: svc.price })); sel.append(opt); } else { console.warn("Skipping invalid service:", svc); } }); } else { console.error("Error: services not array:", s); showAlert("Erreur: Données services invalides."); } console.log("Initializing select2..."); $('#services').select2({ placeholder: "Sélectionner...", allowClear: true, templateResult: formatService, templateSelection: formatServiceSelection }); console.log("Select2 initialized."); } catch (e) { console.error("Error in loadServices:", e); showAlert(`Erreur services: ${e.message}`); } finally { hideLoader(); } }
-    function updateTotal() { /* Keep as is */ try{const d=$('#services').select2("data");const t=d.reduce((sum,s)=>{if(s.id){try{const sd=JSON.parse(s.id);return sum+parseFloat(sd.price||0);}catch(e){console.error("updateTotal Error:",e,s.id);return sum;}}return sum;},0);document.getElementById("total").textContent=t.toFixed(2);}catch(e){console.error("Error updateTotal:",e);} }
-    async function createInvoice() { /* Keep as is */ const s=$('#services').select2("data");if(s.length===0||s.every(i=>!i.id)){showAlert("Sélectionner service(s).","warning");return;}let ids=[];try{ids=s.filter(i=>i.id).map(i=>JSON.parse(i.id).id);}catch(e){console.error("Error prep invoice:",e);showAlert("Erreur préparation facture.");return;}const p=document.getElementById("modePaiement").value;showLoader();try{const r=await apiService.createInvoice({ipp:ipp,mode_paiement:p,services:ids});console.log("Invoice Creation:",r);$('#services').val(null).trigger('change');updateTotal();showAlert("Facture créée!","success");await loadInvoices();}catch(e){showAlert(`Erreur création facture: ${e.message}`);}finally{hideLoader();} }
-    async function loadInvoices() { /* Keep as is */ if (!ipp) return; showLoader(); try { const inv = await apiService.getInvoicesByIpp(ipp); console.log("Invoices API:", inv); const tb = document.getElementById("factureBody"); tb.innerHTML = ''; if (!Array.isArray(inv) || inv.length === 0) { tb.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture.</td></tr>'; return; } inv.forEach(i => { const row = document.createElement("tr"); const id = i.id ?? 'N/A'; const mnt = i.montant ? `${parseFloat(i.montant).toFixed(2)} MAD` : 'N/A'; const pay = i.mode_paiement ?? 'N/A'; const stat = i.etat_paiement ?? 'N/A'; const dt = i.date_facturation ? new Date(i.date_facturation).toLocaleString() : 'N/A'; const paid = stat.toLowerCase() === 'payé'; const cls = paid ? 'badge-paid' : 'badge-pending'; const txt = paid ? 'Payé' : 'En attente'; const next = paid ? 'en attente' : 'payé'; const btn = paid ? 'Marquer en attente' : 'Marquer payé'; row.innerHTML = `<td>${id}</td><td>${mnt}</td><td class="payment-method"><i class="${getPaymentIcon(pay)} me-2"></i>${formatPaymentMode(pay)}</td><td><span class="badge ${cls}">${txt}</span></td><td>${dt}</td><td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${id}, '${next}')">${btn}</button></td>`; tb.append(row); }); } catch (e) { console.error("Error loading invoices:", e); showAlert(`Erreur factures: ${e.message}`); } finally { hideLoader(); } }
-    async function updateInvoiceStatus(id, status) { /* Keep as is */ if(typeof id!=='number'||!status){console.error("Invalid args update:",id,status);showAlert("Erreur interne.");return;} showLoader();try{await apiService.updatePaymentStatus(id,status);showAlert("Statut màj!","success");loadInvoices();}catch(e){showAlert(`Erreur màj statut: ${e.message}`);}finally{hideLoader();} }
+    async function loadPatientInfo() { /* ... */ if(!ipp){showAlert("IPP manquant...");return;} showLoader();try{const d=await apiService.fetchPatient(ipp);console.log("Patient API Response:",d);for(const k in d){const el=document.getElementById(k);if(el){el.textContent=d[k]||'-';}}}catch(e){showAlert(`Erreur patient: ${e.message}`);}finally{hideLoader();} }
+    async function loadServices() { /* ... */ showLoader(); try { const r = await apiService.fetchServices(); console.log("Result received by loadServices:", r); const s = r?.services; const sel = document.getElementById("services"); console.log("servicesSelect element:", sel); if (!sel) { console.error("Fatal: #services not found"); showAlert("Erreur: Liste services non trouvée."); hideLoader(); return; } sel.innerHTML = ''; if (Array.isArray(s)) { console.log(`Populating ${s.length} services.`); s.forEach(svc => { if (svc && typeof svc.id !== 'undefined' && svc.name && svc.price) { const opt = new Option(`${svc.name} - ${svc.price} MAD`, JSON.stringify({ id: svc.id, name: svc.name, price: svc.price })); sel.append(opt); } else { console.warn("Skipping invalid service:", svc); } }); } else { console.error("Error: services not array:", s); showAlert("Erreur: Données services invalides."); } console.log("Initializing select2..."); $('#services').select2({ placeholder: "Sélectionner...", allowClear: true, templateResult: formatService, templateSelection: formatServiceSelection }); console.log("Select2 initialized."); } catch (e) { console.error("Error in loadServices:", e); showAlert(`Erreur services: ${e.message}`); } finally { hideLoader(); } }
+    function updateTotal() { /* ... */ try{const d=$('#services').select2("data");const t=d.reduce((sum,s)=>{if(s.id){try{const sd=JSON.parse(s.id);return sum+parseFloat(sd.price||0);}catch(e){console.error("updateTotal Error:",e,s.id);return sum;}}return sum;},0);document.getElementById("total").textContent=t.toFixed(2);}catch(e){console.error("Error updateTotal:",e);} }
+    async function createInvoice() { /* ... */ const s=$('#services').select2("data");if(s.length===0||s.every(i=>!i.id)){showAlert("Sélectionner service(s).","warning");return;}let ids=[];try{ids=s.filter(i=>i.id).map(i=>JSON.parse(i.id).id);}catch(e){console.error("Error prep invoice:",e);showAlert("Erreur préparation facture.");return;}const p=document.getElementById("modePaiement").value;showLoader();try{const r=await apiService.createInvoice({ipp:ipp,mode_paiement:p,services:ids});console.log("Invoice Creation:",r);$('#services').val(null).trigger('change');updateTotal();showAlert("Facture créée!","success");await loadInvoices();}catch(e){showAlert(`Erreur création facture: ${e.message}`);}finally{hideLoader();} }
+
+    // --- Corrected loadInvoices ---
+    async function loadInvoices() {
+      if (!ipp) return;
+      showLoader();
+      try {
+        // Fetch the response object { status: 'success', factures: [...] }
+        const invoicesResponse = await apiService.getInvoicesByIpp(ipp);
+        console.log("Invoices API Response Object:", invoicesResponse);
+
+        // Extract the 'factures' array from the response object
+        const invoices = invoicesResponse?.factures; // Use optional chaining
+
+        const tableBody = document.getElementById("factureBody");
+        console.log("Invoice table body element:", tableBody);
+
+        if (!tableBody) {
+            console.error("Fatal Error: Could not find invoice table body (#factureBody)");
+            showAlert("Erreur interne: Impossible de trouver la table des factures.", "danger");
+            hideLoader();
+            return;
+        }
+
+        // Clear existing rows
+        tableBody.innerHTML = '';
+
+        // Check if invoices is a valid array before proceeding
+        if (!Array.isArray(invoices) || invoices.length === 0) {
+          console.log("No invoices found in response or data is not an array.");
+          tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>';
+          // No need to hide loader here, finally block will do it
+          return; // Stop execution
+        }
+
+        console.log(`Processing ${invoices.length} invoices.`);
+
+        // Populate the table with invoices
+        invoices.forEach((invoice, index) => {
+          // console.log(`Processing invoice ${index + 1}:`, invoice); // Optional: Log each invoice
+
+          const row = document.createElement("tr");
+
+          // Use correct field names from your API response object for each invoice
+          const id = invoice.id ?? 'N/A';
+          const montant = invoice.montant ? `${parseFloat(invoice.montant).toFixed(2)} MAD` : 'N/A';
+          const modePaiement = invoice.mode_paiement ?? 'N/A';
+          const etatPaiement = invoice.etat_paiement ?? 'N/A'; // e.g., 'payé', 'en attente'
+          const dateFacturation = invoice.date_facturation ? new Date(invoice.date_facturation).toLocaleString() : 'N/A';
+
+          // Determine display values based on etatPaiement
+          const isPaid = etatPaiement.toLowerCase() === 'payé';
+          const statusBadgeClass = isPaid ? 'badge-paid' : 'badge-pending';
+          const statusText = isPaid ? 'Payé' : 'En attente';
+          const nextStatus = isPaid ? 'en attente' : 'payé';
+          const buttonText = isPaid ? 'Marquer comme en attente' : 'Marquer comme payé';
+
+          // Ensure 'id' is suitable for the onclick function (assuming it's a number)
+           const numericId = parseInt(id);
+           if (isNaN(numericId)) {
+               console.error(`Invoice ${index + 1} has invalid ID for button: ${id}`);
+               // For now, we'll add the row but the button might not work correctly.
+               // You might want to disable the button or show 'N/A' instead.
+               row.innerHTML = `
+                    <td>${id}</td>
+                    <td>${montant}</td>
+                    <td class="payment-method"><i class="${getPaymentIcon(modePaiement)} me-2"></i>${formatPaymentMode(modePaiement)}</td>
+                    <td><span class="badge ${statusBadgeClass}">${statusText}</span></td>
+                    <td>${dateFacturation}</td>
+                    <td><button class="btn btn-sm btn-outline-secondary" disabled>Action Indisponible</button></td>
+                `;
+           } else {
+               row.innerHTML = `
+                    <td>${id}</td>
+                    <td>${montant}</td>
+                    <td class="payment-method"><i class="${getPaymentIcon(modePaiement)} me-2"></i>${formatPaymentMode(modePaiement)}</td>
+                    <td><span class="badge ${statusBadgeClass}">${statusText}</span></td>
+                    <td>${dateFacturation}</td>
+                    <td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${numericId}, '${nextStatus}')">${buttonText}</button></td>
+                `;
+           }
+          tableBody.append(row);
+        });
+         console.log("Finished appending invoice rows.");
+
+      } catch (error) {
+        console.error("Error loading invoices:", error);
+        showAlert(`Erreur lors du chargement des factures: ${error.message}`);
+      } finally {
+        hideLoader();
+      }
+    }
+    // --- End Corrected loadInvoices ---
+
+    async function updateInvoiceStatus(id, status) { /* ... */ if(typeof id!=='number'||!status){console.error("Invalid args update:",id,status);showAlert("Erreur interne.");return;} showLoader();try{await apiService.updatePaymentStatus(id,status);showAlert("Statut màj!","success");loadInvoices();}catch(e){showAlert(`Erreur màj statut: ${e.message}`);}finally{hideLoader();} }
 
     // Event listeners
-    $(document).ready(function () { /* Keep as is */
+    $(document).ready(function () { /* ... */
       console.log("Document ready. Initializing loads..."); loadPatientInfo(); loadServices(); loadInvoices(); $('#services').on('change', updateTotal); $('#creerFacture').on('click', createInvoice); console.log("Event listeners attached."); });
   </script>
 </body>
