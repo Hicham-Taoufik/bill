@@ -550,7 +550,7 @@
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
     // Configuration
-    const baseUrl = "https://workflows.aphelionxinnovations.com"; // Replace with your base URL// Replace with your base URL from Postman Collection (or keep as is if defined globally)
+    const baseUrl = "https://workflows.aphelionxinnovations.com"; // Replace with your base URL
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA"; // Use your token
 
     // Get IPP from URL parameters
@@ -606,30 +606,30 @@
         }
       },
 
-      async function fetchServices() {
+      async fetchServices() {
         try {
           const res = await fetch(`${baseUrl}/webhook/tarifs`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-      
+
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement des services`);
           }
-      
+
           const responseData = await res.json(); // Get the full response array
           console.log("Full Services API Response:", responseData); // Log the full response for debugging
-      
+
           // **Extract the services array from the nested structure:**
           const servicesArray = responseData[0]?.services || []; // Access the first element, then 'services', with safety checks
-      
+
           return { services: servicesArray }; // Return in the format expected by the rest of your code
-      
+
         } catch (error) {
           console.error("Services fetch error:", error);
           throw error;
         }
-      }
+      },
 
       async createInvoice(data) {
         try {
@@ -752,8 +752,8 @@
         // Add new options - adapt to API response structure, assuming services array of objects with id, nom, and prix
         services.forEach((service) => {
           const option = new Option(
-            `${service.nom} - ${service.prix} MAD`, // Assuming API returns 'nom' and 'prix'
-            JSON.stringify({id: service.id, name: service.nom, price: service.prix}) // Storing structured data
+            `${service.name} - ${service.price} MAD`, // Assuming API returns 'name' and 'price'
+            JSON.stringify({id: service.id, name: service.name, price: service.price}) // Storing structured data
           );
           servicesSelect.append(option);
         });
