@@ -606,24 +606,30 @@
         }
       },
 
-      async fetchServices() {
+      async function fetchServices() {
         try {
           const res = await fetch(`${baseUrl}/webhook/tarifs`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-
+      
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement des services`);
           }
-
-          const data = await res.json();
-          return { services: data }; // API returns an array directly, adapting to previous structure
+      
+          const responseData = await res.json(); // Get the full response array
+          console.log("Full Services API Response:", responseData); // Log the full response for debugging
+      
+          // **Extract the services array from the nested structure:**
+          const servicesArray = responseData[0]?.services || []; // Access the first element, then 'services', with safety checks
+      
+          return { services: servicesArray }; // Return in the format expected by the rest of your code
+      
         } catch (error) {
           console.error("Services fetch error:", error);
           throw error;
         }
-      },
+      }
 
       async createInvoice(data) {
         try {
