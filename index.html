@@ -18,11 +18,36 @@
     }
     .facture-table th, .facture-table td {
       text-align: center;
+      vertical-align: middle;
     }
     #loader {
       text-align: center;
       font-weight: bold;
       display: none;
+    }
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .status-paid {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-unpaid {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .select2-container {
+      width: 100% !important;
+    }
+    .alert {
+      display: none;
+      margin-top: 15px;
     }
   </style>
 </head>
@@ -30,171 +55,451 @@
   <div class="container">
     <h2>Dashboard de Facturation</h2>
 
+    <div id="alertContainer" class="alert" role="alert"></div>
+
     <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Informations du Patient</h5>
+      </div>
       <div class="card-body">
-        <h5 class="card-title">Informations du Patient</h5>
-        <p><strong>Nom:</strong> <span id="nom"></span></p>
-        <p><strong>Prénom:</strong> <span id="prenom"></span></p>
-        <p><strong>CIN:</strong> <span id="cin"></span></p>
-        <p><strong>Téléphone:</strong> <span id="telephone"></span></p>
-        <p><strong>Adresse:</strong> <span id="adresse"></span></p>
-        <p><strong>Ville:</strong> <span id="ville"></span></p>
-        <p><strong>Date de Naissance:</strong> <span id="date_naissance"></span></p>
-        <p><strong>Sexe:</strong> <span id="sexe"></span></p>
-        <p><strong>Mutuelle:</strong> <span id="mutuelle"></span></p>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Nom:</strong> <span id="nom">-</span></p>
+            <p><strong>Prénom:</strong> <span id="prenom">-</span></p>
+            <p><strong>CIN:</strong> <span id="cin">-</span></p>
+            <p><strong>Téléphone:</strong> <span id="telephone">-</span></p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Adresse:</strong> <span id="adresse">-</span></p>
+            <p><strong>Ville:</strong> <span id="ville">-</span></p>
+            <p><strong>Date de Naissance:</strong> <span id="date_naissance">-</span></p>
+            <p><strong>Sexe:</strong> <span id="sexe">-</span></p>
+            <p><strong>Mutuelle:</strong> <span id="mutuelle">-</span></p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="mb-3">
-      <label for="services" class="form-label"><strong>Services Disponibles</strong></label>
-      <select class="form-select" id="services" multiple></select>
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Nouvelle Facture</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="services" class="form-label"><strong>Services Disponibles</strong></label>
+          <select class="form-select" id="services" multiple></select>
+        </div>
+
+        <div class="mb-3">
+          <label for="modePaiement" class="form-label"><strong>Mode de Paiement</strong></label>
+          <select class="form-select" id="modePaiement">
+            <option value="cash">Espèces</option>
+            <option value="card">Carte</option>
+            <option value="insurance">Assurance</option>
+          </select>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <div>
+            <h5 class="mb-0">Total: <span id="total" class="text-primary fw-bold">0.00</span> MAD</h5>
+          </div>
+          <button id="creerFacture" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Créer Facture
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="modePaiement" class="form-label"><strong>Mode de Paiement</strong></label>
-      <select class="form-select" id="modePaiement">
-        <option value="cash">Espèces</option>
-        <option value="card">Carte</option>
-        <option value="insurance">Assurance</option>
-      </select>
+    <div id="loader" class="my-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      <p class="mt-2">Chargement en cours...</p>
     </div>
 
-    <p><strong>Total:</strong> <span id="total">0</span> MAD</p>
-
-    <button id="creerFacture" class="btn btn-primary">Créer Facture</button>
-
-    <div id="loader">Chargement...</div>
-
-    <h5 class="mt-5">Factures Existantes</h5>
-    <table class="table table-bordered facture-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Montant</th>
-          <th>Mode de Paiement</th>
-          <th>Statut</th>
-          <th>Date</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="factureBody">
-        <tr><td colspan="6">Chargement des factures...</td></tr>
-      </tbody>
-    </table>
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Factures Existantes</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered facture-table">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Montant</th>
+                <th>Mode de Paiement</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="factureBody">
+              <tr><td colspan="6" class="text-center">Chargement des factures...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA";
+    // Configuration
     const baseUrl = "https://workflows.aphelionxinnovations.com";
-    const ipp = new URLSearchParams(window.location.search).get("ipp");
-    if (!ipp) {
-      alert("IPP manquant dans l'URL.");
-      throw new Error("IPP is missing");
-    }
-
-    async function fetchPatient() {
+    
+    // Get token from sessionStorage (in a real app) or use the hardcoded one for development
+    // In production, you should implement proper authentication
+    const token = sessionStorage.getItem('authToken') || 
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA";
+    
+    // Get IPP from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const ipp = urlParams.get("ipp");
+    
+    // Helper functions
+    function showLoader() {
       document.getElementById('loader').style.display = 'block';
-      try {
-        const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${ipp}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Patient fetch failed");
-        const data = await res.json();
-        for (const key in data) {
-          const el = document.getElementById(key);
-          if (el) el.textContent = data[key];
+    }
+    
+    function hideLoader() {
+      document.getElementById('loader').style.display = 'none';
+    }
+    
+    function showAlert(message, type = 'danger') {
+      const alertElement = document.getElementById('alertContainer');
+      alertElement.className = `alert alert-${type}`;
+      alertElement.textContent = message;
+      alertElement.style.display = 'block';
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        alertElement.style.display = 'none';
+      }, 5000);
+    }
+    
+    // API service layer
+    const apiService = {
+      async fetchPatient(patientIpp) {
+        try {
+          const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement du patient`);
+          }
+          
+          return await res.json();
+        } catch (error) {
+          console.error("Patient fetch error:", error);
+          throw error;
         }
-      } catch (e) {
-        alert("Erreur lors du chargement du patient.");
-      } finally {
-        document.getElementById('loader').style.display = 'none';
+      },
+      
+      async fetchServices() {
+        try {
+          const res = await fetch(`${baseUrl}/webhook/tarifs`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          if (!res.ok) {
+            throw new Error(`Erreur ${res.status}: Échec du chargement des services`);
+          }
+          
+          return await res.json();
+        } catch (error) {
+          console.error("Services fetch error:", error);
+          throw error;
+        }
+      },
+      
+      async createInvoice(data) {
+        try {
+          const res = await fetch(`${baseUrl}/webhook/create-facture`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+          
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || `Erreur ${res.status}: Échec de création de la facture`);
+          }
+          
+          return await res.json();
+        } catch (error) {
+          console.error("Invoice creation error:", error);
+          throw error;
+        }
+      },
+      
+      async getInvoicesByIpp(patientIpp) {
+        try {
+          const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          if (!res.ok) {
+            throw new Error(`Erreur ${res.status}: Échec du chargement des factures`);
+          }
+          
+          return await res.json();
+        } catch (error) {
+          console.error("Invoices fetch error:", error);
+          throw error;
+        }
+      },
+      
+      async updatePaymentStatus(factureId, status) {
+        try {
+          const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ facture_id: factureId, etat_paiement: status }),
+          });
+          
+          if (!res.ok) {
+            throw new Error(`Erreur ${res.status}: Échec de mise à jour du statut`);
+          }
+          
+          return await res.json();
+        } catch (error) {
+          console.error("Payment status update error:", error);
+          throw error;
+        }
       }
-    }
-
-    async function fetchServices() {
-      const res = await fetch(`${baseUrl}/webhook/tarifs`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const { services } = await res.json();
-      services.forEach((s) => {
-        const option = new Option(`${s.name} - ${s.price} MAD`, JSON.stringify(s));
-        document.getElementById("services").append(option);
-      });
-      $('#services').select2({ placeholder: "Sélectionner des services..." });
-    }
-
-    function updateTotal() {
-      const selected = $('#services').select2("data");
-      const total = selected.reduce((sum, s) => sum + parseFloat(JSON.parse(s.id).price), 0);
-      document.getElementById("total").textContent = total.toFixed(2);
-    }
-
-    async function createFacture() {
-      const selected = $('#services').select2("data").map(s => JSON.parse(s.id).id);
-      const mode = document.getElementById("modePaiement").value;
-      const total = $('#services').select2("data").reduce((sum, s) => sum + parseFloat(JSON.parse(s.id).price), 0);
-      await fetch(`${baseUrl}/webhook/create-facture`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ipp, mode_paiement: mode, services: selected, total }),
-      });
-      loadFactures();
-    }
-
-    async function markAsPaid(id) {
-      await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ facture_id: id, etat_paiement: "payé" }),
-      });
-      loadFactures();
-    }
-
-    async function loadFactures() {
-      const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${ipp}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const factures = await res.json();
-      const body = document.getElementById("factureBody");
-      body.innerHTML = "";
-      if (!factures || factures.length === 0) {
-        body.innerHTML = `<tr><td colspan='6'>Aucune facture trouvée.</td></tr>`;
+    };
+    
+    // UI functions
+    async function loadPatientInfo() {
+      if (!ipp) {
+        showAlert("IPP manquant dans l'URL. Veuillez spécifier un IPP valide.");
         return;
       }
-      factures.forEach((f) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${f.id}</td>
-          <td>${f.montant} MAD</td>
-          <td>${f.mode_paiement}</td>
-          <td>${f.etat_paiement}</td>
-          <td>${new Date(f.date_facturation).toLocaleString()}</td>
-          <td><button class="btn btn-success btn-mark-paid" data-facture-id="${f.id}">Marquer Payé</button></td>
-        `;
-        body.appendChild(tr);
-      });
-      document.querySelectorAll('.btn-mark-paid').forEach(btn => {
-        btn.addEventListener('click', function () {
-          const id = this.dataset.factureId;
-          markAsPaid(id);
+      
+      showLoader();
+      try {
+        const patientData = await apiService.fetchPatient(ipp);
+        
+        // Update patient info fields
+        for (const key in patientData) {
+          const element = document.getElementById(key);
+          if (element) {
+            element.textContent = patientData[key] || '-';
+          }
+        }
+      } catch (error) {
+        showAlert(`Erreur lors du chargement du patient: ${error.message}`);
+      } finally {
+        hideLoader();
+      }
+    }
+    
+    async function loadServices() {
+      showLoader();
+      try {
+        const { services } = await apiService.fetchServices();
+        const servicesSelect = document.getElementById("services");
+        
+        // Clear existing options
+        servicesSelect.innerHTML = '';
+        
+        // Add new options
+        services.forEach((service) => {
+          const option = new Option(
+            `${service.name} - ${service.price} MAD`, 
+            JSON.stringify(service)
+          );
+          servicesSelect.append(option);
+        });
+        
+        // Initialize Select2
+        $('#services').select2({
+          placeholder: "Sélectionner des services...",
+          allowClear: true
+        });
+      } catch (error) {
+        showAlert(`Erreur lors du chargement des services: ${error.message}`);
+      } finally {
+        hideLoader();
+      }
+    }
+    
+    function updateTotal() {
+      const selectedServices = $('#services').select2("data");
+      const total = selectedServices.reduce((sum, service) => {
+        const serviceData = JSON.parse(service.id);
+        return sum + parseFloat(serviceData.price);
+      }, 0);
+      
+      document.getElementById("total").textContent = total.toFixed(2);
+    }
+    
+    async function createInvoice() {
+      const selectedServices = $('#services').select2("data");
+      
+      // Validation
+      if (selectedServices.length === 0) {
+        showAlert("Veuillez sélectionner au moins un service.", "warning");
+        return;
+      }
+      
+      // Prepare data
+      const serviceIds = selectedServices.map(service => JSON.parse(service.id).id);
+      const paymentMode = document.getElementById("modePaiement").value;
+      const totalAmount = selectedServices.reduce((sum, service) => {
+        return sum + parseFloat(JSON.parse(service.id).price);
+      }, 0);
+      
+      // Create invoice
+      showLoader();
+      try {
+        await apiService.createInvoice({
+          ipp,
+          mode_paiement: paymentMode,
+          services: serviceIds,
+          total: totalAmount
+        });
+        
+        // Reset form
+        $('#services').val(null).trigger('change');
+        updateTotal();
+        
+        // Show success message
+        showAlert("Facture créée avec succès!", "success");
+        
+        // Refresh invoice list
+        await loadInvoices();
+      } catch (error) {
+        showAlert(`Erreur lors de la création de la facture: ${error.message}`);
+      } finally {
+        hideLoader();
+      }
+    }
+    
+    async function loadInvoices() {
+      if (!ipp) return;
+      
+      showLoader();
+      try {
+        const invoices = await apiService.getInvoicesByIpp(ipp);
+        const tableBody = document.getElementById("factureBody");
+        
+        // Clear existing rows
+        tableBody.innerHTML = '';
+        
+        // Check if there are invoices
+        if (!invoices || invoices.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="6" class="text-center">Aucune facture trouvée pour ce patient.</td></tr>`;
+          return;
+        }
+        
+        // Add invoice rows
+        invoices.forEach((invoice) => {
+          const isPaid = invoice.etat_paiement.toLowerCase() === 'payé';
+          const formattedDate = new Date(invoice.date_facturation).toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${invoice.id}</td>
+            <td><strong>${parseFloat(invoice.montant).toFixed(2)} MAD</strong></td>
+            <td>${formatPaymentMode(invoice.mode_paiement)}</td>
+            <td>
+              <span class="status-badge ${isPaid ? 'status-paid' : 'status-unpaid'}">
+                ${invoice.etat_paiement}
+              </span>
+            </td>
+            <td>${formattedDate}</td>
+            <td>
+              <button class="btn btn-sm ${isPaid ? 'btn-outline-success' : 'btn-success'} btn-mark-paid" 
+                      data-facture-id="${invoice.id}"
+                      ${isPaid ? 'disabled' : ''}>
+                ${isPaid ? 'Déjà Payé' : 'Marquer Payé'}
+              </button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+        
+        // Attach event listeners to new buttons
+        attachMarkAsPaidListeners();
+      } catch (error) {
+        showAlert(`Erreur lors du chargement des factures: ${error.message}`);
+      } finally {
+        hideLoader();
+      }
+    }
+    
+    function formatPaymentMode(mode) {
+      const modes = {
+        'cash': 'Espèces',
+        'card': 'Carte',
+        'insurance': 'Assurance'
+      };
+      return modes[mode] || mode;
+    }
+    
+    function attachMarkAsPaidListeners() {
+      document.querySelectorAll('.btn-mark-paid:not([disabled])').forEach(button => {
+        button.addEventListener('click', async function() {
+          const factureId = this.dataset.factureId;
+          
+          // Disable button during operation
+          this.disabled = true;
+          this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+          
+          try {
+            await apiService.updatePaymentStatus(factureId, "payé");
+            showAlert("Le statut de paiement a été mis à jour avec succès!", "success");
+            await loadInvoices();
+          } catch (error) {
+            showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`);
+            this.disabled = false;
+            this.innerHTML = 'Marquer Payé';
+          }
         });
       });
     }
-
-    document.getElementById("services").addEventListener("change", updateTotal);
-    document.getElementById("creerFacture").addEventListener("click", createFacture);
-
-    fetchPatient();
-    fetchServices();
-    loadFactures();
+    
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById("services").addEventListener("change", updateTotal);
+      
+      document.getElementById("creerFacture").addEventListener("click", async function() {
+        // Disable button during API call
+        this.disabled = true;
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Création...';
+        
+        try {
+          await createInvoice();
+        } finally {
+          // Re-enable button
+          this.disabled = false;
+          this.innerHTML = originalText;
+        }
+      });
+      
+      // Initialize the page
+      loadPatientInfo();
+      loadServices();
+      loadInvoices();
+    });
   </script>
 </body>
 </html>
