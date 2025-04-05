@@ -48,9 +48,9 @@
     <div class="mb-3">
       <label for="modePaiement" class="form-label"><strong>Mode de Paiement</strong></label>
       <select class="form-select" id="modePaiement">
-        <option>Espèces</option>
-        <option>Carte</option>
-        <option>Assurance</option>
+        <option value="cash">Espèces</option>
+        <option value="card">Carte</option>
+        <option value="insurance">Assurance</option>
       </select>
     </div>
 
@@ -102,28 +102,29 @@
         const option = new Option(`${s.name} - ${s.price} MAD`, JSON.stringify(s));
         document.getElementById("services").append(option);
       });
-      $('#services').select2({ placeholder: "Sélectionner des services..." });
+      $('#services').select2({
+        placeholder: "Sélectionner des services...",
+        escapeMarkup: m => m // évite eval()
+      });
     }
 
     function updateTotal() {
       const selected = $('#services').select2("data");
-      const total = selected.reduce((sum, s) => {
-        const price = parseFloat(s.text.split(" - ")[1]);
-        return sum + price;
-      }, 0);
+      const total = selected.reduce((sum, s) => sum + parseFloat(JSON.parse(s.id).price), 0);
       document.getElementById("total").textContent = total.toFixed(2);
     }
 
     async function createFacture() {
       const selected = $('#services').select2("data").map(s => JSON.parse(s.id).id);
       const mode = document.getElementById("modePaiement").value;
+      const total = $('#services').select2("data").reduce((sum, s) => sum + parseFloat(JSON.parse(s.id).price), 0);
       const res = await fetch(`${baseUrl}/webhook/create-facture`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ipp, mode_paiement: mode, services: selected }),
+        body: JSON.stringify({ ipp, mode_paiement: mode, services: selected, total }),
       });
       await res.json();
       loadFactures();
@@ -145,9 +146,13 @@
       const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${ipp}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const { json: factures } = await res.json();
+      const factures = await res.json();
       const body = document.getElementById("factureBody");
       body.innerHTML = "";
+      if (factures.length === 0) {
+        body.innerHTML = `<tr><td colspan='5'>Aucune facture trouvée.</td></tr>`;
+        return;
+      }
       factures.forEach((f) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -167,7 +172,7 @@
       const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${ipp}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const { json: factures } = await res.json();
+      const factures = await res.json();
       if (factures.length > 0) markAsPaid(factures[0].id);
     });
 
