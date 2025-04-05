@@ -3,128 +3,529 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard de Facturation</title>
+  <title>MediClinic - Dashboard de Facturation</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --primary-color: #5469d4;
+      --secondary-color: #7795f8;
+      --success-color: #3ecf8e;
+      --danger-color: #e25950;
+      --warning-color: #f8b653;
+      --info-color: #6baaee;
+      --light-color: #f8f9fb;
+      --dark-color: #212529;
+      --light-gray: #eaecef;
+      --border-radius: 0.75rem;
+      --box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
     body {
-      background-color: #f5f6f7;
-      padding: 20px;
+      background-color: #f9fafc;
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      color: #324054;
     }
-    h2 {
-      color: #007bff;
-      text-align: center;
-      margin-bottom: 30px;
+
+    .app-container {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
     }
-    .facture-table th, .facture-table td {
-      text-align: center;
-      vertical-align: middle;
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--light-gray);
     }
-    #loader {
-      text-align: center;
-      font-weight: bold;
-      display: none;
+
+    .page-title {
+      color: var(--primary-color);
+      font-weight: 600;
+      margin: 0;
+      font-size: 1.75rem;
     }
-    .status-badge {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 500;
+
+    .clinic-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      color: var(--primary-color);
     }
-    .status-paid {
-      background-color: #d4edda;
-      color: #155724;
+
+    .clinic-logo i {
+      margin-right: 0.5rem;
+      font-size: 1.5rem;
     }
-    .status-unpaid {
-      background-color: #f8d7da;
-      color: #721c24;
+
+    .card {
+      border: none;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-bottom: 1.5rem;
+      transition: var(--transition);
+      overflow: hidden;
     }
+    
+    .card:hover {
+      box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
+    }
+
     .card-header {
-      background-color: #f8f9fa;
-      border-bottom: 1px solid #dee2e6;
+      background-color: #fff;
+      border-bottom: 1px solid var(--light-gray);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+
+    .card-title {
+      font-weight: 600;
+      margin: 0;
+      color: var(--dark-color);
+      font-size: 1.1rem;
+    }
+    
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .icon-patient {
+      background: linear-gradient(45deg, #6772e5, #5469d4);
+    }
+
+    .icon-invoice {
+      background: linear-gradient(45deg, #3ecf8e, #2fbe7f);
+    }
+
+    .icon-history {
+      background: linear-gradient(45deg, #f8b653, #f7a429);
+    }
+
+    .patient-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .patient-info-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .patient-info-label {
+      color: #8792a2;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .patient-info-value {
+      font-weight: 500;
+      font-size: 1rem;
+    }
+
     .select2-container {
       width: 100% !important;
     }
+
+    .select2-container--default .select2-selection--multiple {
+      border-color: #ced4da;
+      border-radius: 0.375rem;
+      min-height: 38px;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(84, 105, 212, 0.25);
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+      background-color: var(--primary-color);
+      border: none;
+      color: white;
+      border-radius: 20px;
+      padding: 2px 10px;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+      color: white;
+      margin-right: 5px;
+    }
+
+    .form-control, .form-select {
+      border-radius: 0.5rem;
+      padding: 0.6rem 1rem;
+      border: 1px solid #dfe3e8;
+    }
+
+    .form-control:focus, .form-select:focus {
+      box-shadow: 0 0 0 0.25rem rgba(84, 105, 212, 0.25);
+      border-color: var(--primary-color);
+    }
+
+    .form-group label {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #506690;
+    }
+
+    .btn {
+      border-radius: 0.5rem;
+      padding: 0.6rem 1.5rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover, .btn-primary:focus {
+      background-color: #465bbf;
+      border-color: #465bbf;
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      border-color: var(--success-color);
+    }
+
+    .btn-success:hover, .btn-success:focus {
+      background-color: #2fbe7f;
+      border-color: #2fbe7f;
+    }
+
+    .btn-outline-success {
+      color: var(--success-color);
+      border-color: var(--success-color);
+    }
+
+    .btn-outline-success:hover, .btn-outline-success:focus {
+      background-color: var(--success-color);
+      border-color: var(--success-color);
+      color: white;
+    }
+
+    .badge {
+      padding: 0.5rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .badge-paid {
+      background-color: rgba(62, 207, 142, 0.15);
+      color: var(--success-color);
+    }
+
+    .badge-pending {
+      background-color: rgba(248, 182, 83, 0.15);
+      color: var(--warning-color);
+    }
+
+    .total-price {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .price-card {
+      background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .price-label {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .price-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+
+    .price-currency {
+      font-size: 1rem;
+      font-weight: 400;
+      margin-left: 0.25rem;
+    }
+
+    .table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
+
+    .table th {
+      background-color: #f8f9fa;
+      color: #506690;
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .table th:first-child {
+      border-top-left-radius: 0.5rem;
+    }
+
+    .table th:last-child {
+      border-top-right-radius: 0.5rem;
+    }
+
+    .table td, .table th {
+      padding: 1rem;
+      vertical-align: middle;
+      text-align: center;
+      border-bottom: 1px solid var(--light-gray);
+    }
+
+    .payment-method {
+      display: inline-flex;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .payment-method i {
+      margin-right: 0.5rem;
+      font-size: 1.1rem;
+    }
+
     .alert {
+      border-radius: var(--border-radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      border: none;
       display: none;
-      margin-top: 15px;
+    }
+
+    .alert-danger {
+      background-color: rgba(226, 89, 80, 0.15);
+      color: var(--danger-color);
+    }
+    
+    .alert-success {
+      background-color: rgba(62, 207, 142, 0.15);
+      color: var(--success-color);
+    }
+
+    .alert-warning {
+      background-color: rgba(248, 182, 83, 0.15);
+      color: var(--warning-color);
+    }
+
+    .loader-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loader {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(84, 105, 212, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #8792a2;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state-message {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-description {
+      font-size: 0.9rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        padding: 1rem;
+      }
+      
+      .patient-info {
+        grid-template-columns: 1fr;
+      }
+      
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .card-title {
+        margin-bottom: 0.5rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Dashboard de Facturation</h2>
-
+  <div class="loader-container">
+    <div class="loader"></div>
+  </div>
+  
+  <div class="app-container">
+    <div class="page-header">
+      <h1 class="page-title">Dashboard de Facturation</h1>
+      <div class="clinic-logo">
+        <i class="fas fa-hospital-user"></i>
+        MediClinic
+      </div>
+    </div>
+    
     <div id="alertContainer" class="alert" role="alert"></div>
-
-    <div class="card mb-4">
+    
+    <div class="card">
       <div class="card-header">
-        <h5 class="card-title mb-0">Informations du Patient</h5>
+        <h5 class="card-title">Informations du Patient</h5>
+        <div class="card-icon icon-patient">
+          <i class="fas fa-user"></i>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="patient-info">
+          <div class="patient-info-item">
+            <div class="patient-info-label">Nom</div>
+            <div class="patient-info-value" id="nom">-</div>
+          </div>
+          <div class="patient-info-item">
+            <div class="patient-info-label">Prénom</div>
+            <div class="patient-info-value" id="prenom">-</div>
+          </div>
+          <div class="patient-info-item">
+            <div class="patient-info-label">CIN</div>
+            <div class="patient-info-value" id="cin">-</div>
+          </div>
+          <div class="patient-info-item">
+            <div class="patient-info-label">Téléphone</div>
+            <div class="patient-info-value" id="telephone">-</div>
+          </div>
+          <div class="patient-info-item">
+            <div class="patient-info-label">Adresse</div>
+            <div class="patient-info-value" id="adresse">-</div>
+          </div>
+          <div class="patient-info-item">
+            <div class="patient-info-label">Ville</div>
+            <div class="patient-info-value" id="ville">-</div>
+          </div>
+          <div class="patient-info-item">
+            <div class="patient-info-label">Date de Naissance</div>
+            <div class="patient-info-value" id="date_naissance">-</div>
+          </div>
+          <div class="patient-info-item">
+            <div class="patient-info-label">Sexe</div>
+            <div class="patient-info-value" id="sexe">-</div>
+          </div>
+          <div class="patient-info-item">
+            <div class="patient-info-label">Mutuelle</div>
+            <div class="patient-info-value" id="mutuelle">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">Nouvelle Facture</h5>
+        <div class="card-icon icon-invoice">
+          <i class="fas fa-file-invoice"></i>
+        </div>
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-md-6">
-            <p><strong>Nom:</strong> <span id="nom">-</span></p>
-            <p><strong>Prénom:</strong> <span id="prenom">-</span></p>
-            <p><strong>CIN:</strong> <span id="cin">-</span></p>
-            <p><strong>Téléphone:</strong> <span id="telephone">-</span></p>
+          <div class="col-md-8">
+            <div class="form-group mb-4">
+              <label for="services"><i class="fas fa-list-check me-2"></i>Services Disponibles</label>
+              <select class="form-select" id="services" multiple></select>
+            </div>
+            
+            <div class="form-group mb-4">
+              <label for="modePaiement"><i class="fas fa-credit-card me-2"></i>Mode de Paiement</label>
+              <select class="form-select" id="modePaiement">
+                <option value="espèces">Espèces</option>
+                <option value="carte">Carte Bancaire</option>
+                <option value="assurance">Assurance</option>
+              </select>
+            </div>
           </div>
-          <div class="col-md-6">
-            <p><strong>Adresse:</strong> <span id="adresse">-</span></p>
-            <p><strong>Ville:</strong> <span id="ville">-</span></p>
-            <p><strong>Date de Naissance:</strong> <span id="date_naissance">-</span></p>
-            <p><strong>Sexe:</strong> <span id="sexe">-</span></p>
-            <p><strong>Mutuelle:</strong> <span id="mutuelle">-</span></p>
+          
+          <div class="col-md-4">
+            <div class="price-card">
+              <div class="price-label">Montant Total</div>
+              <div class="price-value"><span id="total">0.00</span><span class="price-currency">MAD</span></div>
+              <button id="creerFacture" class="btn btn-light w-100 mt-3">
+                <i class="fas fa-plus-circle me-2"></i>Créer Facture
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5 class="card-title mb-0">Nouvelle Facture</h5>
-      </div>
-      <div class="card-body">
-        <div class="mb-3">
-          <label for="services" class="form-label"><strong>Services Disponibles</strong></label>
-          <select class="form-select" id="services" multiple></select>
-        </div>
-
-        <div class="mb-3">
-          <label for="modePaiement" class="form-label"><strong>Mode de Paiement</strong></label>
-          <select class="form-select" id="modePaiement">
-            <option value="cash">Espèces</option>
-            <option value="card">Carte</option>
-            <option value="insurance">Assurance</option>
-          </select>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center mt-4">
-          <div>
-            <h5 class="mb-0">Total: <span id="total" class="text-primary fw-bold">0.00</span> MAD</h5>
-          </div>
-          <button id="creerFacture" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Créer Facture
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div id="loader" class="my-3">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Chargement...</span>
-      </div>
-      <p class="mt-2">Chargement en cours...</p>
-    </div>
-
+    
     <div class="card">
       <div class="card-header">
-        <h5 class="card-title mb-0">Factures Existantes</h5>
+        <h5 class="card-title">Historique des Factures</h5>
+        <div class="card-icon icon-history">
+          <i class="fas fa-history"></i>
+        </div>
       </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-bordered facture-table">
-            <thead class="table-light">
+          <table class="table">
+            <thead>
               <tr>
                 <th>ID</th>
                 <th>Montant</th>
@@ -135,7 +536,9 @@
               </tr>
             </thead>
             <tbody id="factureBody">
-              <tr><td colspan="6" class="text-center">Chargement des factures...</td></tr>
+              <tr>
+                <td colspan="6" class="text-center">Chargement des factures...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -150,7 +553,6 @@
     const baseUrl = "https://workflows.aphelionxinnovations.com";
     
     // Get token from sessionStorage (in a real app) or use the hardcoded one for development
-    // In production, you should implement proper authentication
     const token = sessionStorage.getItem('authToken') || 
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA";
     
@@ -160,18 +562,26 @@
     
     // Helper functions
     function showLoader() {
-      document.getElementById('loader').style.display = 'block';
+      document.querySelector('.loader-container').style.display = 'flex';
     }
     
     function hideLoader() {
-      document.getElementById('loader').style.display = 'none';
+      document.querySelector('.loader-container').style.display = 'none';
     }
     
     function showAlert(message, type = 'danger') {
       const alertElement = document.getElementById('alertContainer');
       alertElement.className = `alert alert-${type}`;
-      alertElement.textContent = message;
+      alertElement.innerHTML = `
+        <i class="${type === 'danger' ? 'fas fa-exclamation-circle' : 
+                  type === 'success' ? 'fas fa-check-circle' : 
+                  'fas fa-exclamation-triangle'} me-2"></i>
+        ${message}
+      `;
       alertElement.style.display = 'block';
+      
+      // Scroll to alert
+      alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       
       // Auto-hide after 5 seconds
       setTimeout(() => {
@@ -218,6 +628,7 @@
       
       async createInvoice(data) {
         try {
+          // Make sure mode_paiement values match what the backend expects
           const res = await fetch(`${baseUrl}/webhook/create-facture`, {
             method: "POST",
             headers: {
@@ -325,13 +736,34 @@
         // Initialize Select2
         $('#services').select2({
           placeholder: "Sélectionner des services...",
-          allowClear: true
+          allowClear: true,
+          templateResult: formatService,
+          templateSelection: formatServiceSelection
         });
       } catch (error) {
         showAlert(`Erreur lors du chargement des services: ${error.message}`);
       } finally {
         hideLoader();
       }
+    }
+    
+    function formatService(service) {
+      if (!service.id) return service.text;
+      
+      const serviceData = JSON.parse(service.id);
+      return $(`
+        <div class="d-flex justify-content-between align-items-center">
+          <span>${serviceData.name}</span>
+          <span class="badge bg-primary">${serviceData.price} MAD</span>
+        </div>
+      `);
+    }
+    
+    function formatServiceSelection(service) {
+      if (!service.id) return service.text;
+      
+      const serviceData = JSON.parse(service.id);
+      return serviceData.name;
     }
     
     function updateTotal() {
@@ -399,7 +831,17 @@
         
         // Check if there are invoices
         if (!invoices || invoices.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="6" class="text-center">Aucune facture trouvée pour ce patient.</td></tr>`;
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="6">
+                <div class="empty-state">
+                  <i class="fas fa-file-invoice"></i>
+                  <div class="empty-state-message">Aucune facture trouvée</div>
+                  <div class="empty-state-description">Créez une nouvelle facture pour ce patient en utilisant le formulaire ci-dessus.</div>
+                </div>
+              </td>
+            </tr>
+          `;
           return;
         }
         
@@ -414,13 +856,20 @@
             minute: '2-digit'
           });
           
+          const paymentIcon = getPaymentIcon(invoice.mode_paiement);
+          
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${invoice.id}</td>
+            <td>#${invoice.id}</td>
             <td><strong>${parseFloat(invoice.montant).toFixed(2)} MAD</strong></td>
-            <td>${formatPaymentMode(invoice.mode_paiement)}</td>
             <td>
-              <span class="status-badge ${isPaid ? 'status-paid' : 'status-unpaid'}">
+              <div class="payment-method">
+                <i class="${paymentIcon}"></i>
+                ${formatPaymentMode(invoice.mode_paiement)}
+              </div>
+            </td>
+            <td>
+              <span class="badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
                 ${invoice.etat_paiement}
               </span>
             </td>
@@ -428,78 +877,3 @@
             <td>
               <button class="btn btn-sm ${isPaid ? 'btn-outline-success' : 'btn-success'} btn-mark-paid" 
                       data-facture-id="${invoice.id}"
-                      ${isPaid ? 'disabled' : ''}>
-                ${isPaid ? 'Déjà Payé' : 'Marquer Payé'}
-              </button>
-            </td>
-          `;
-          tableBody.appendChild(row);
-        });
-        
-        // Attach event listeners to new buttons
-        attachMarkAsPaidListeners();
-      } catch (error) {
-        showAlert(`Erreur lors du chargement des factures: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
-    }
-    
-    function formatPaymentMode(mode) {
-      const modes = {
-        'cash': 'Espèces',
-        'card': 'Carte',
-        'insurance': 'Assurance'
-      };
-      return modes[mode] || mode;
-    }
-    
-    function attachMarkAsPaidListeners() {
-      document.querySelectorAll('.btn-mark-paid:not([disabled])').forEach(button => {
-        button.addEventListener('click', async function() {
-          const factureId = this.dataset.factureId;
-          
-          // Disable button during operation
-          this.disabled = true;
-          this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-          
-          try {
-            await apiService.updatePaymentStatus(factureId, "payé");
-            showAlert("Le statut de paiement a été mis à jour avec succès!", "success");
-            await loadInvoices();
-          } catch (error) {
-            showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`);
-            this.disabled = false;
-            this.innerHTML = 'Marquer Payé';
-          }
-        });
-      });
-    }
-    
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById("services").addEventListener("change", updateTotal);
-      
-      document.getElementById("creerFacture").addEventListener("click", async function() {
-        // Disable button during API call
-        this.disabled = true;
-        const originalText = this.innerHTML;
-        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Création...';
-        
-        try {
-          await createInvoice();
-        } finally {
-          // Re-enable button
-          this.disabled = false;
-          this.innerHTML = originalText;
-        }
-      });
-      
-      // Initialize the page
-      loadPatientInfo();
-      loadServices();
-      loadInvoices();
-    });
-  </script>
-</body>
-</html>
