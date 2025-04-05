@@ -557,7 +557,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const ipp = urlParams.get("ipp") || "IPP-1743516316438"; // Use a default IPP for testing
 
-    // Helper functions (keep these as they are)
+    // Helper functions
     function showLoader() {
       document.querySelector('.loader-container').style.display = 'flex';
     }
@@ -576,11 +576,7 @@
         ${message}
       `;
       alertElement.style.display = 'block';
-
-      // Scroll to alert
       alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      // Auto-hide after 5 seconds
       setTimeout(() => {
         alertElement.style.display = 'none';
       }, 5000);
@@ -593,12 +589,10 @@
           const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement du patient`);
           }
-
           return await res.json();
         } catch (error) {
           console.error("Patient fetch error:", error);
@@ -611,20 +605,17 @@
           const res = await fetch(`${baseUrl}/webhook/tarifs`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement des services`);
           }
+          const responseData = await res.json();
+          console.log("Full Services API Response:", responseData);
 
-          const responseData = await res.json(); // Get the full response array
-          console.log("Full Services API Response:", responseData); // Log the full response for debugging
+          const servicesArray = responseData[0]?.services || [];
+          console.log("Extracted servicesArray:", servicesArray); // Log the extracted array
 
-          // **Extract the services array from the nested structure:**
-          const servicesArray = responseData[0]?.services || []; // Access the first element, then 'services', with safety checks
-
-          return { services: servicesArray }; // Return in the format expected by the rest of your code
-
+          return { services: servicesArray };
         } catch (error) {
           console.error("Services fetch error:", error);
           throw error;
@@ -641,12 +632,10 @@
             },
             body: JSON.stringify(data)
           });
-
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec de la création de la facture`);
           }
-
           return await res.json();
         } catch (error) {
           console.error("Invoice creation error:", error);
@@ -659,12 +648,10 @@
           const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement de l'historique des factures`);
           }
-
           return await res.json();
         } catch (error) {
           console.error("Invoices fetch error:", error);
@@ -680,14 +667,12 @@
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) // API expects lowercase status
+            body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() })
           });
-
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec de la mise à jour du statut de paiement`);
           }
-
           return await res.json();
         } catch (error) {
           console.error("Payment status update error:", error);
@@ -696,8 +681,9 @@
       }
     };
 
-    // Format payment mode display and icons (keep these as they are)
+    // Format payment mode display and icons
     function formatPaymentMode(mode) {
+      // (Keep this function as is)
       switch(mode.toLowerCase()) {
         case 'espèces': return 'Espèces';
         case 'carte': return 'Carte Bancaire';
@@ -707,6 +693,7 @@
     }
 
     function getPaymentIcon(mode) {
+      // (Keep this function as is)
       switch(mode.toLowerCase()) {
         case 'espèces': return 'fas fa-money-bill-wave';
         case 'carte': return 'fas fa-credit-card';
@@ -717,16 +704,11 @@
 
     // UI functions
     async function loadPatientInfo() {
-      if (!ipp) {
-        showAlert("IPP manquant dans l'URL. Veuillez spécifier un IPP valide.");
-        return;
-      }
-
+      if (!ipp) { /* ... */ return; }
       showLoader();
       try {
         const patientData = await apiService.fetchPatient(ipp);
-        console.log("Patient API Response:", patientData); // Log for debugging
-        // Update patient info fields - adapt to API response if different
+        console.log("Patient API Response:", patientData);
         for (const key in patientData) {
           const element = document.getElementById(key);
           if (element) {
@@ -740,35 +722,41 @@
       }
     }
 
+    // --- Revised loadServices ---
     async function loadServices() {
       showLoader();
       try {
-        const { services } = await apiService.fetchServices(); // Fetches and extracts services correctly
+        // Assign the full result first
+        const serviceResult = await apiService.fetchServices();
+        console.log("Result from apiService.fetchServices:", serviceResult); // Log the whole object received
+
+        // Access the services property robustly
+        const services = serviceResult?.services; // Use optional chaining
+
         const servicesSelect = document.getElementById("services");
         console.log("servicesSelect element:", servicesSelect);
+
+        if (!servicesSelect) {
+            console.error("Fatal Error: Could not find the services select element (#services)");
+            showAlert("Erreur interne: Impossible de trouver la liste des services.", "danger");
+            hideLoader(); // Make sure loader hides on fatal error
+            return; // Stop execution
+        }
 
         // Clear existing options *before* adding new ones
         servicesSelect.innerHTML = '';
 
-        if (!servicesSelect) {
-            console.error("Error: Could not find the services select element (#services)");
-            showAlert("Erreur interne: Impossible de trouver la liste des services.", "danger");
-            return;
-        }
-
         if (Array.isArray(services)) {
-          console.log(`Populating services. Found ${services.length} services.`); // Log number of services
+          console.log(`Populating services. Found ${services.length} services.`); // This should now log 9
           services.forEach((service) => {
             const option = new Option(
               `${service.name} - ${service.price} MAD`,
               JSON.stringify({id: service.id, name: service.name, price: service.price})
             );
-            // console.log("Created option:", option); // Optional: Log each created option
             servicesSelect.append(option);
-            // console.log("Appended option to servicesSelect"); // Optional: Log each append
           });
         } else {
-          console.error("Error: services data is not an array:", services);
+          console.error("Error: services data is not an array or is undefined:", services);
           showAlert("Erreur interne: Format de données des services incorrect.", "danger");
         }
 
@@ -777,30 +765,28 @@
         $('#services').select2({
           placeholder: "Sélectionner des services...",
           allowClear: true,
-          templateResult: formatService, // Custom function for how options look in the dropdown
-          templateSelection: formatServiceSelection // Custom function for how selected options look
+          templateResult: formatService,
+          templateSelection: formatServiceSelection
         });
         console.log("Select2 initialized.");
 
       } catch (error) {
-        // Log the specific error during service loading/processing
         console.error("Error in loadServices function:", error);
         showAlert(`Erreur lors du chargement des services: ${error.message}`, "danger");
       } finally {
         hideLoader();
       }
     }
+    // --- End Revised loadServices ---
+
 
     function formatService(service) {
-      // Check if it's the placeholder
+      // (Keep this function as is from previous version with try/catch)
       if (!service.id) {
           return service.text;
       }
-      // Make sure service.id is a stringified JSON before parsing
       try {
-          // The `id` here is actually the *value* of the option element, which we set as stringified JSON
           const serviceData = JSON.parse(service.id);
-          // Check if parsing was successful and properties exist
           if (serviceData && serviceData.name && serviceData.price) {
               return $(`
                 <div class="d-flex justify-content-between align-items-center">
@@ -810,54 +796,49 @@
               `);
           } else {
               console.warn("formatService: Could not parse service data or missing properties", service.id);
-              return service.text; // Fallback to default text
+              return service.text;
           }
       } catch (e) {
           console.error("formatService Error parsing JSON:", e, service.id);
-          return service.text; // Fallback if JSON parsing fails
+          return service.text;
       }
     }
 
     function formatServiceSelection(service) {
-      // Check if it's the placeholder or an unselected state
-      if (!service.id || !service.element) { // Added check for service.element
+      // (Keep this function as is from previous version with try/catch)
+       if (!service.id || !service.element) {
           return service.text;
       }
-      // Make sure service.element.value is a stringified JSON before parsing
       try {
-          // The value of the selected option element
           const serviceData = JSON.parse(service.element.value);
-          // Check if parsing was successful and name exists
           if (serviceData && serviceData.name) {
-              return serviceData.name; // Display only the name for selected items
+              return serviceData.name;
           } else {
               console.warn("formatServiceSelection: Could not parse service data or missing name", service.element.value);
-              return service.text; // Fallback
+              return service.text;
           }
       } catch (e) {
           console.error("formatServiceSelection Error parsing JSON:", e, service.element.value);
-          return service.text; // Fallback if JSON parsing fails
+          return service.text;
       }
     }
 
-
     function updateTotal() {
+      // (Keep this function as is from previous version with try/catch)
       try {
         const selectedServices = $('#services').select2("data");
         const total = selectedServices.reduce((sum, service) => {
-          // The `id` property of the select2 data object corresponds to the *value* of the selected option
-          if (service.id) { // Ensure it's a selected service, not a placeholder
+          if (service.id) {
             try {
                 const serviceData = JSON.parse(service.id);
-                return sum + parseFloat(serviceData.price || 0); // Add safety check for price
+                return sum + parseFloat(serviceData.price || 0);
             } catch (e) {
                 console.error("updateTotal Error parsing JSON:", e, service.id);
-                return sum; // Skip this item if parsing fails
+                return sum;
             }
           }
           return sum;
         }, 0);
-
         document.getElementById("total").textContent = total.toFixed(2);
       } catch (error) {
           console.error("Error in updateTotal:", error);
@@ -865,22 +846,18 @@
     }
 
     async function createInvoice() {
+      // (Keep this function as is from previous version with try/catch)
       const selectedServices = $('#services').select2("data");
-
-      // Validation
-      if (selectedServices.length === 0 || selectedServices.every(s => !s.id)) { // Check if only placeholder is selected
+      if (selectedServices.length === 0 || selectedServices.every(s => !s.id)) {
         showAlert("Veuillez sélectionner au moins un service.", "warning");
         return;
       }
-
-      // Prepare data
       let serviceIds = [];
-      let totalAmount = 0;
+      let totalAmount = 0; // Keep for potential future use, though API might calculate it
       try {
           serviceIds = selectedServices
-              .filter(service => service.id) // Filter out placeholders/unselected states
+              .filter(service => service.id)
               .map(service => JSON.parse(service.id).id);
-
           totalAmount = selectedServices
               .filter(service => service.id)
               .reduce((sum, service) => {
@@ -892,28 +869,18 @@
           showAlert("Erreur lors de la préparation des données de la facture.", "danger");
           return;
       }
-
       const paymentMode = document.getElementById("modePaiement").value;
-
-      // Create invoice
       showLoader();
       try {
         const invoiceResponse = await apiService.createInvoice({
           ipp: ipp,
           mode_paiement: paymentMode,
           services: serviceIds
-          // Note: API calculates total, we don't need to send 'totalAmount' based on Postman
         });
-        console.log("Invoice Creation Response:", invoiceResponse); // Log response
-
-        // Reset form
-        $('#services').val(null).trigger('change'); // Crucial for select2 to update UI
-        updateTotal(); // Should reset total to 0.00
-
-        // Show success message
+        console.log("Invoice Creation Response:", invoiceResponse);
+        $('#services').val(null).trigger('change');
+        updateTotal();
         showAlert("Facture créée avec succès!", "success");
-
-        // Refresh invoice list
         await loadInvoices();
       } catch (error) {
         showAlert(`Erreur lors de la création de la facture: ${error.message}`);
@@ -924,34 +891,25 @@
 
 
     async function loadInvoices() {
+      // (Keep this function as is from previous version with checks)
       if (!ipp) return;
-
       showLoader();
       try {
         const invoices = await apiService.getInvoicesByIpp(ipp);
-        console.log("Invoices API Response:", invoices); // Log for debugging
+        console.log("Invoices API Response:", invoices);
         const tableBody = document.getElementById("factureBody");
-
-        // Clear existing rows
         tableBody.innerHTML = '';
-
-        // Check if there are invoices
-        if (!Array.isArray(invoices) || invoices.length === 0) { // Added Array.isArray check
+        if (!Array.isArray(invoices) || invoices.length === 0) {
           tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>';
           return;
         }
-
-        // Populate the table with invoices
         invoices.forEach(invoice => {
           const row = document.createElement("tr");
-
-          // Basic check for expected properties
           const id = invoice.id ?? 'N/A';
           const montant = invoice.montant ? `${parseFloat(invoice.montant).toFixed(2)} MAD` : 'N/A';
           const modePaiement = invoice.mode_paiement ?? 'N/A';
-          const etatPaiement = invoice.etat_paiement ?? 'N/A'; // Expecting lowercase 'payé' or 'en attente'
+          const etatPaiement = invoice.etat_paiement ?? 'N/A';
           const dateFacturation = invoice.date_facturation ? new Date(invoice.date_facturation).toLocaleString() : 'N/A';
-
           const isPaid = etatPaiement.toLowerCase() === 'payé';
           const statusBadgeClass = isPaid ? 'badge-paid' : 'badge-pending';
           const statusText = isPaid ? 'Payé' : 'En attente';
@@ -969,7 +927,7 @@
           tableBody.append(row);
         });
       } catch (error) {
-        console.error("Error loading invoices:", error); // Log specific error
+        console.error("Error loading invoices:", error);
         showAlert(`Erreur lors du chargement des factures: ${error.message}`);
       } finally {
         hideLoader();
@@ -977,8 +935,8 @@
     }
 
     async function updateInvoiceStatus(factureId, status) {
-        // Basic validation
-        if (typeof factureId !== 'number' || !status) {
+      // (Keep this function as is from previous version with checks)
+      if (typeof factureId !== 'number' || !status) {
             console.error("Invalid arguments for updateInvoiceStatus:", factureId, status);
             showAlert("Erreur interne: Impossible de mettre à jour le statut.", "danger");
             return;
@@ -987,7 +945,7 @@
       try {
         await apiService.updatePaymentStatus(factureId, status);
         showAlert("Statut mis à jour avec succès!", "success");
-        loadInvoices(); // Refresh the list after update
+        loadInvoices();
       } catch (error) {
         showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`);
       } finally {
@@ -1002,10 +960,7 @@
       loadServices(); // Load services which includes select2 initialization
       loadInvoices();
 
-      // Important: Attach event listener *after* select2 is initialized.
-      // It's generally safer to attach it in document.ready, select2 handles updates.
       $('#services').on('change', updateTotal);
-
       $('#creerFacture').on('click', createInvoice);
       console.log("Event listeners attached.");
     });
