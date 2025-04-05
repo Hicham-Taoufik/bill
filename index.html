@@ -745,18 +745,23 @@
       try {
         const { services } = await apiService.fetchServices();
         const servicesSelect = document.getElementById("services");
-
-        // Clear existing options
+        console.log("servicesSelect element:", servicesSelect); // ADD THIS LINE
         servicesSelect.innerHTML = '';
 
-        // Add new options - adapt to API response structure, assuming services array of objects with id, nom, and prix
-        services.forEach((service) => {
-          const option = new Option(
-            `${service.name} - ${service.price} MAD`, // Assuming API returns 'name' and 'price'
-            JSON.stringify({id: service.id, name: service.name, price: service.price}) // Storing structured data
-          );
-          servicesSelect.append(option);
-        });
+        if (Array.isArray(services)) { // ADD THIS CHECK
+          services.forEach((service) => {
+            const option = new Option(
+              `${service.name} - ${service.price} MAD`,
+              JSON.stringify({id: service.id, name: service.name, price: service.price})
+            );
+            console.log("Created option:", option); // ADD THIS LINE
+            servicesSelect.append(option);
+            console.log("Appended option to servicesSelect"); // ADD THIS LINE
+          });
+        } else {
+          console.error("Error: services is not an array:", services); // Log if not an array
+        }
+
 
         // Initialize Select2
         $('#services').select2({
