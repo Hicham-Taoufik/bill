@@ -75,7 +75,7 @@
       transition: var(--transition);
       overflow: hidden;
     }
-    
+
     .card:hover {
       box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
     }
@@ -95,7 +95,7 @@
       color: var(--dark-color);
       font-size: 1.1rem;
     }
-    
+
     .card-body {
       padding: 1.5rem;
     }
@@ -329,7 +329,7 @@
       background-color: rgba(226, 89, 80, 0.15);
       color: var(--danger-color);
     }
-    
+
     .alert-success {
       background-color: rgba(62, 207, 142, 0.15);
       color: var(--success-color);
@@ -396,16 +396,16 @@
       .app-container {
         padding: 1rem;
       }
-      
+
       .patient-info {
         grid-template-columns: 1fr;
       }
-      
+
       .card-header {
         flex-direction: column;
         align-items: flex-start;
       }
-      
+
       .card-title {
         margin-bottom: 0.5rem;
       }
@@ -416,7 +416,7 @@
   <div class="loader-container">
     <div class="loader"></div>
   </div>
-  
+
   <div class="app-container">
     <div class="page-header">
       <h1 class="page-title">Dashboard de Facturation</h1>
@@ -425,9 +425,9 @@
         MediClinic
       </div>
     </div>
-    
+
     <div id="alertContainer" class="alert" role="alert"></div>
-    
+
     <div class="card">
       <div class="card-header">
         <h5 class="card-title">Informations du Patient</h5>
@@ -476,7 +476,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="card">
       <div class="card-header">
         <h5 class="card-title">Nouvelle Facture</h5>
@@ -491,7 +491,7 @@
               <label for="services"><i class="fas fa-list-check me-2"></i>Services Disponibles</label>
               <select class="form-select" id="services" multiple></select>
             </div>
-            
+
             <div class="form-group mb-4">
               <label for="modePaiement"><i class="fas fa-credit-card me-2"></i>Mode de Paiement</label>
               <select class="form-select" id="modePaiement">
@@ -501,7 +501,7 @@
               </select>
             </div>
           </div>
-          
+
           <div class="col-md-4">
             <div class="price-card">
               <div class="price-label">Montant Total</div>
@@ -514,7 +514,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="card">
       <div class="card-header">
         <h5 class="card-title">Historique des Factures</h5>
@@ -550,157 +550,147 @@
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
     // Configuration
-    const baseUrl = "https://workflows.aphelionxinnovations.com";
-    
-    // Get token from sessionStorage (in a real app) or use the hardcoded one for development
-    const token = sessionStorage.getItem('authToken') || 
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA";
-    
+    const baseUrl = "{{base_url}}"; // Replace with your base URL from Postman Collection (or keep as is if defined globally)
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA"; // Use your token
+
     // Get IPP from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const ipp = urlParams.get("ipp") || "P123456"; // Add default IPP for testing
-    
-    // Helper functions
+    const ipp = urlParams.get("ipp") || "IPP-1743516316438"; // Use a default IPP for testing
+
+    // Helper functions (keep these as they are)
     function showLoader() {
       document.querySelector('.loader-container').style.display = 'flex';
     }
-    
+
     function hideLoader() {
       document.querySelector('.loader-container').style.display = 'none';
     }
-    
+
     function showAlert(message, type = 'danger') {
       const alertElement = document.getElementById('alertContainer');
       alertElement.className = `alert alert-${type}`;
       alertElement.innerHTML = `
-        <i class="${type === 'danger' ? 'fas fa-exclamation-circle' : 
-                  type === 'success' ? 'fas fa-check-circle' : 
+        <i class="${type === 'danger' ? 'fas fa-exclamation-circle' :
+                  type === 'success' ? 'fas fa-check-circle' :
                   'fas fa-exclamation-triangle'} me-2"></i>
         ${message}
       `;
       alertElement.style.display = 'block';
-      
+
       // Scroll to alert
       alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      
+
       // Auto-hide after 5 seconds
       setTimeout(() => {
         alertElement.style.display = 'none';
       }, 5000);
     }
-    
+
     // API service layer
     const apiService = {
       async fetchPatient(patientIpp) {
         try {
-          // For demo purposes, let's simulate a successful API response
-          // In a real application, we would use the fetch call below
-          /*
           const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          
+
           if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}));
+            const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement du patient`);
           }
-          
+
           return await res.json();
-          */
-          
-          // Simulated patient data
-          return {
-            nom: "Dupont",
-            prenom: "Marie",
-            cin: "AB123456",
-            telephone: "+33 6 12 34 56 78",
-            adresse: "123 Rue de la Santé",
-            ville: "Paris",
-            date_naissance: "15/05/1985",
-            sexe: "F",
-            mutuelle: "MGEN"
-          };
         } catch (error) {
           console.error("Patient fetch error:", error);
           throw error;
         }
       },
-      
+
       async fetchServices() {
         try {
-          // Simulated services data
-          return {
-            services: [
-              { id: 1, name: "Consultation Générale", price: 300 },
-              { id: 2, name: "Analyse Sanguine", price: 250 },
-              { id: 3, name: "Radiographie", price: 500 },
-              { id: 4, name: "Échographie", price: 700 },
-              { id: 5, name: "Scanner", price: 1200 },
-              { id: 6, name: "Consultation Spécialiste", price: 600 }
-            ]
-          };
+          const res = await fetch(`${baseUrl}/webhook/tarifs`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: res.statusText }));
+            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement des services`);
+          }
+
+          const data = await res.json();
+          return { services: data }; // API returns an array directly, adapting to previous structure
         } catch (error) {
           console.error("Services fetch error:", error);
           throw error;
         }
       },
-      
+
       async createInvoice(data) {
         try {
-          // Simulate invoice creation
-          console.log("Creating invoice with data:", data);
-          return { success: true, message: "Facture créée avec succès", id: Math.floor(Math.random() * 10000) };
+          const res = await fetch(`${baseUrl}/webhook/create-facture`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: res.statusText }));
+            throw new Error(errorData.message || `Erreur ${res.status}: Échec de la création de la facture`);
+          }
+
+          return await res.json();
         } catch (error) {
           console.error("Invoice creation error:", error);
           throw error;
         }
       },
-      
+
       async getInvoicesByIpp(patientIpp) {
         try {
-          // Simulated invoices data
-          return [
-            { 
-              id: 1001, 
-              montant: 850, 
-              mode_paiement: "espèces", 
-              etat_paiement: "Payé", 
-              date_facturation: new Date(2025, 3, 3, 14, 30).toISOString() 
-            },
-            { 
-              id: 1002, 
-              montant: 1200, 
-              mode_paiement: "carte", 
-              etat_paiement: "Payé", 
-              date_facturation: new Date(2025, 3, 2, 10, 15).toISOString() 
-            },
-            { 
-              id: 1003, 
-              montant: 700, 
-              mode_paiement: "assurance", 
-              etat_paiement: "En attente", 
-              date_facturation: new Date(2025, 3, 1, 16, 45).toISOString() 
-            }
-          ];
+          const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: res.statusText }));
+            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement de l'historique des factures`);
+          }
+
+          return await res.json();
         } catch (error) {
           console.error("Invoices fetch error:", error);
           throw error;
         }
       },
-      
-      async updatePaymentStatus(factureId, status) {
+
+      async updatePaymentStatus(factureId, etat_paiement) {
         try {
-          // Simulate status update
-          console.log(`Updating facture ${factureId} to status ${status}`);
-          return { success: true, message: "Statut mis à jour avec succès" };
+          const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) // API expects lowercase status
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: res.statusText }));
+            throw new Error(errorData.message || `Erreur ${res.status}: Échec de la mise à jour du statut de paiement`);
+          }
+
+          return await res.json();
         } catch (error) {
           console.error("Payment status update error:", error);
           throw error;
         }
       }
     };
-    
-    // Format payment mode display
+
+    // Format payment mode display and icons (keep these as they are)
     function formatPaymentMode(mode) {
       switch(mode.toLowerCase()) {
         case 'espèces': return 'Espèces';
@@ -709,8 +699,7 @@
         default: return mode;
       }
     }
-    
-    // Get payment icon class
+
     function getPaymentIcon(mode) {
       switch(mode.toLowerCase()) {
         case 'espèces': return 'fas fa-money-bill-wave';
@@ -719,19 +708,19 @@
         default: return 'fas fa-circle';
       }
     }
-    
-    // UI functions
+
+    // UI functions (keep most of these, adjust where necessary)
     async function loadPatientInfo() {
       if (!ipp) {
         showAlert("IPP manquant dans l'URL. Veuillez spécifier un IPP valide.");
         return;
       }
-      
+
       showLoader();
       try {
         const patientData = await apiService.fetchPatient(ipp);
-        
-        // Update patient info fields
+
+        // Update patient info fields - adapt to API response if different
         for (const key in patientData) {
           const element = document.getElementById(key);
           if (element) {
@@ -744,25 +733,25 @@
         hideLoader();
       }
     }
-    
+
     async function loadServices() {
       showLoader();
       try {
         const { services } = await apiService.fetchServices();
         const servicesSelect = document.getElementById("services");
-        
+
         // Clear existing options
         servicesSelect.innerHTML = '';
-        
-        // Add new options
+
+        // Add new options - adapt to API response structure, assuming services array of objects with id, nom, and prix
         services.forEach((service) => {
           const option = new Option(
-            `${service.name} - ${service.price} MAD`, 
-            JSON.stringify(service)
+            `${service.nom} - ${service.prix} MAD`, // Assuming API returns 'nom' and 'prix'
+            JSON.stringify({id: service.id, name: service.nom, price: service.prix}) // Storing structured data
           );
           servicesSelect.append(option);
         });
-        
+
         // Initialize Select2
         $('#services').select2({
           placeholder: "Sélectionner des services...",
@@ -776,10 +765,10 @@
         hideLoader();
       }
     }
-    
+
     function formatService(service) {
       if (!service.id) return service.text;
-      
+
       const serviceData = JSON.parse(service.id);
       return $(`
         <div class="d-flex justify-content-between align-items-center">
@@ -788,57 +777,56 @@
         </div>
       `);
     }
-    
+
     function formatServiceSelection(service) {
       if (!service.id) return service.text;
-      
+
       const serviceData = JSON.parse(service.id);
       return serviceData.name;
     }
-    
+
     function updateTotal() {
       const selectedServices = $('#services').select2("data");
       const total = selectedServices.reduce((sum, service) => {
         const serviceData = JSON.parse(service.id);
         return sum + parseFloat(serviceData.price);
       }, 0);
-      
+
       document.getElementById("total").textContent = total.toFixed(2);
     }
-    
+
     async function createInvoice() {
       const selectedServices = $('#services').select2("data");
-      
+
       // Validation
       if (selectedServices.length === 0) {
         showAlert("Veuillez sélectionner au moins un service.", "warning");
         return;
       }
-      
+
       // Prepare data
       const serviceIds = selectedServices.map(service => JSON.parse(service.id).id);
       const paymentMode = document.getElementById("modePaiement").value;
       const totalAmount = selectedServices.reduce((sum, service) => {
         return sum + parseFloat(JSON.parse(service.id).price);
       }, 0);
-      
+
       // Create invoice
       showLoader();
       try {
-        await apiService.createInvoice({
-          ipp,
+        const invoiceResponse = await apiService.createInvoice({
+          ipp: ipp,
           mode_paiement: paymentMode,
-          services: serviceIds,
-          total: totalAmount
+          services: serviceIds
         });
-        
+
         // Reset form
         $('#services').val(null).trigger('change');
         updateTotal();
-        
+
         // Show success message
         showAlert("Facture créée avec succès!", "success");
-        
+
         // Refresh invoice list
         await loadInvoices();
       } catch (error) {
@@ -847,195 +835,68 @@
         hideLoader();
       }
     }
-    
-// UI functions
-async function loadPatientInfo() {
-  if (!ipp) {
-    showAlert("IPP manquant dans l'URL. Veuillez spécifier un IPP valide.");
-    return;
-  }
 
-  showLoader();
-  try {
-    const patientData = await apiService.fetchPatient(ipp);
 
-    // Update patient info fields
-    for (const key in patientData) {
-      const element = document.getElementById(key);
-      if (element) {
-        element.textContent = patientData[key] || '-';
+    async function loadInvoices() {
+      if (!ipp) return;
+
+      showLoader();
+      try {
+        const invoices = await apiService.getInvoicesByIpp(ipp);
+        const tableBody = document.getElementById("factureBody");
+
+        // Clear existing rows
+        tableBody.innerHTML = '';
+
+        // Check if there are invoices
+        if (!invoices || invoices.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>';
+          return;
+        }
+
+        // Populate the table with invoices - Adapt to API response, assuming fields like 'id', 'montant', 'mode_paiement', 'etat_paiement', 'date_facturation'
+        invoices.forEach(invoice => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${invoice.id}</td>
+            <td>${invoice.montant} MAD</td>
+            <td class="payment-method"><i class="${getPaymentIcon(invoice.mode_paiement)} me-2"></i>${formatPaymentMode(invoice.mode_paiement)}</td>
+            <td><span class="badge ${invoice.etat_paiement === 'payé' ? 'badge-paid' : 'badge-pending'}">${invoice.etat_paiement === 'payé' ? 'Payé' : 'En attente'}</span></td> <!-- Adapt status display -->
+            <td>${new Date(invoice.date_facturation).toLocaleString()}</td>
+            <td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${invoice.id}, '${invoice.etat_paiement === 'payé' ? 'en attente' : 'payé'}')">${invoice.etat_paiement === 'payé' ? 'Marquer comme en attente' : 'Marquer comme payé'}</button></td> <!-- Adapt status update values -->
+          `;
+          tableBody.append(row);
+        });
+      } catch (error) {
+        showAlert(`Erreur lors du chargement des factures: ${error.message}`);
+      } finally {
+        hideLoader();
       }
     }
-  } catch (error) {
-    showAlert(`Erreur lors du chargement du patient: ${error.message}`);
-  } finally {
-    hideLoader();
-  }
-}
 
-async function loadServices() {
-  showLoader();
-  try {
-    const { services } = await apiService.fetchServices();
-    const servicesSelect = document.getElementById("services");
-
-    // Clear existing options
-    servicesSelect.innerHTML = '';
-
-    // Add new options
-    services.forEach((service) => {
-      const option = new Option(
-        `${service.name} - ${service.price} MAD`,
-        JSON.stringify(service)
-      );
-      servicesSelect.append(option);
-    });
-
-    // Initialize Select2
-    $('#services').select2({
-      placeholder: "Sélectionner des services...",
-      allowClear: true,
-      templateResult: formatService,
-      templateSelection: formatServiceSelection
-    });
-  } catch (error) {
-    showAlert(`Erreur lors du chargement des services: ${error.message}`);
-  } finally {
-    hideLoader();
-  }
-}
-
-function formatService(service) {
-  if (!service.id) return service.text;
-
-  const serviceData = JSON.parse(service.id);
-  return $(`
-    <div class="d-flex justify-content-between align-items-center">
-      <span>${serviceData.name}</span>
-      <span class="badge bg-primary">${serviceData.price} MAD</span>
-    </div>
-  `);
-}
-
-function formatServiceSelection(service) {
-  if (!service.id) return service.text;
-
-  const serviceData = JSON.parse(service.id);
-  return serviceData.name;
-}
-
-function updateTotal() {
-  const selectedServices = $('#services').select2("data");
-  const total = selectedServices.reduce((sum, service) => {
-    const serviceData = JSON.parse(service.id);
-    return sum + parseFloat(serviceData.price);
-  }, 0);
-
-  document.getElementById("total").textContent = total.toFixed(2);
-}
-
-async function createInvoice() {
-  const selectedServices = $('#services').select2("data");
-
-  // Validation
-  if (selectedServices.length === 0) {
-    showAlert("Veuillez sélectionner au moins un service.", "warning");
-    return;
-  }
-
-  // Prepare data
-  const serviceIds = selectedServices.map(service => JSON.parse(service.id).id);
-  const paymentMode = document.getElementById("modePaiement").value;
-  const totalAmount = selectedServices.reduce((sum, service) => {
-    return sum + parseFloat(JSON.parse(service.id).price);
-  }, 0);
-
-  // Create invoice
-  showLoader();
-  try {
-    await apiService.createInvoice({
-      ipp,
-      mode_paiement: paymentMode,
-      services: serviceIds,
-      total: totalAmount
-    });
-
-    // Reset form
-    $('#services').val(null).trigger('change');
-    updateTotal();
-
-    // Show success message
-    showAlert("Facture créée avec succès!", "success");
-
-    // Refresh invoice list
-    await loadInvoices();
-  } catch (error) {
-    showAlert(`Erreur lors de la création de la facture: ${error.message}`);
-  } finally {
-    hideLoader();
-  }
-}
-
-async function loadInvoices() {
-  if (!ipp) return;
-
-  showLoader();
-  try {
-    const invoices = await apiService.getInvoicesByIpp(ipp);
-    const tableBody = document.getElementById("factureBody");
-
-    // Clear existing rows
-    tableBody.innerHTML = '';
-
-    // Check if there are invoices
-    if (!invoices || invoices.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>';
-      return;
+    async function updateInvoiceStatus(factureId, status) {
+      showLoader();
+      try {
+        await apiService.updatePaymentStatus(factureId, status);
+        showAlert("Statut mis à jour avec succès!", "success");
+        loadInvoices();
+      } catch (error) {
+        showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`);
+      } finally {
+        hideLoader();
+      }
     }
 
-    // Populate the table with invoices
-    invoices.forEach(invoice => {
-      const row = document.createElement("tr");
+    // Event listeners
+    $(document).ready(function () {
+      loadPatientInfo();
+      loadServices();
+      loadInvoices();
 
-      row.innerHTML = `
-        <td>${invoice.id}</td>
-        <td>${invoice.montant} MAD</td>
-        <td class="payment-method"><i class="${getPaymentIcon(invoice.mode_paiement)} me-2"></i>${formatPaymentMode(invoice.mode_paiement)}</td>
-        <td><span class="badge ${invoice.etat_paiement === 'Payé' ? 'badge-paid' : 'badge-pending'}">${invoice.etat_paiement}</span></td>
-        <td>${new Date(invoice.date_facturation).toLocaleString()}</td>
-        <td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${invoice.id}, '${invoice.etat_paiement === 'Payé' ? 'En attente' : 'Payé'}')">${invoice.etat_paiement === 'Payé' ? 'Marquer comme en attente' : 'Marquer comme payé'}</button></td>
-      `;
-      tableBody.append(row);
+      $('#services').on('change', updateTotal);
+      $('#creerFacture').on('click', createInvoice);
     });
-  } catch (error) {
-    showAlert(`Erreur lors du chargement des factures: ${error.message}`);
-  } finally {
-    hideLoader();
-  }
-}
-
-async function updateInvoiceStatus(factureId, status) {
-  showLoader();
-  try {
-    await apiService.updatePaymentStatus(factureId, status);
-    showAlert("Statut mis à jour avec succès!", "success");
-    loadInvoices();
-  } catch (error) {
-    showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`);
-  } finally {
-    hideLoader();
-  }
-}
-
-// Event listeners
-$(document).ready(function () {
-  loadPatientInfo();
-  loadServices();
-  loadInvoices();
-
-  $('#services').on('change', updateTotal);
-  $('#creerFacture').on('click', createInvoice);
-});
-</script>
+  </script>
 </body>
 </html>
