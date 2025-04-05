@@ -7,196 +7,223 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Add html2pdf.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
     /* CSS Styles remain the same */
-    :root { --primary-color: #5469d4; --secondary-color: #7795f8; --success-color: #3ecf8e; --danger-color: #e25950; --warning-color: #f8b653; --info-color: #6baaee; --light-color: #f8f9fb; --dark-color: #212529; --light-gray: #eaecef; --border-radius: 0.75rem; --box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08); --transition: all 0.3s ease; }
-    body { background-color: #f9fafc; font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; padding: 0; margin: 0; min-height: 100vh; color: #324054; }
-    .app-container { padding: 2rem; max-width: 1400px; margin: 0 auto; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--light-gray); }
-    .page-title { color: var(--primary-color); font-weight: 600; margin: 0; font-size: 1.75rem; }
-    .clinic-logo { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; color: var(--primary-color); }
-    .clinic-logo i { margin-right: 0.5rem; font-size: 1.5rem; }
-    .card { border: none; border-radius: var(--border-radius); box-shadow: var(--box-shadow); margin-bottom: 1.5rem; transition: var(--transition); overflow: hidden; }
-    .card:hover { box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12); }
-    .card-header { background-color: #fff; border-bottom: 1px solid var(--light-gray); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .card-title { font-weight: 600; margin: 0; color: var(--dark-color); font-size: 1.1rem; }
-    .card-body { padding: 1.5rem; }
-    .card-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: white; font-size: 1.2rem; }
-    .icon-patient { background: linear-gradient(45deg, #6772e5, #5469d4); }
-    .icon-invoice { background: linear-gradient(45deg, #3ecf8e, #2fbe7f); }
-    .icon-history { background: linear-gradient(45deg, #f8b653, #f7a429); }
-    .patient-info { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-    .patient-info-item { margin-bottom: 0.5rem; }
-    .patient-info-label { color: #8792a2; font-size: 0.875rem; margin-bottom: 0.25rem; }
-    .patient-info-value { font-weight: 500; font-size: 1rem; }
-    .select2-container { width: 100% !important; }
-    .select2-container--default .select2-selection--multiple { border-color: #ced4da; border-radius: 0.375rem; min-height: 38px; }
-    .select2-container--default.select2-container--focus .select2-selection--multiple { border-color: var(--primary-color); box-shadow: 0 0 0 0.25rem rgba(84, 105, 212, 0.25); }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice { background-color: var(--primary-color); border: none; color: white; border-radius: 20px; padding: 2px 10px; }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove { color: white; margin-right: 5px; }
-    .form-control, .form-select { border-radius: 0.5rem; padding: 0.6rem 1rem; border: 1px solid #dfe3e8; }
-    .form-control:focus, .form-select:focus { box-shadow: 0 0 0 0.25rem rgba(84, 105, 212, 0.25); border-color: var(--primary-color); }
-    .form-group label { font-weight: 500; margin-bottom: 0.5rem; color: #506690; }
-    .btn { border-radius: 0.5rem; padding: 0.6rem 1.5rem; font-weight: 500; transition: var(--transition); }
-    .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
-    .btn-primary:hover, .btn-primary:focus { background-color: #465bbf; border-color: #465bbf; }
-    .btn-success { background-color: var(--success-color); border-color: var(--success-color); }
-    .btn-success:hover, .btn-success:focus { background-color: #2fbe7f; border-color: #2fbe7f; }
-    .btn-outline-success { color: var(--success-color); border-color: var(--success-color); }
-    .btn-outline-success:hover, .btn-outline-success:focus { background-color: var(--success-color); border-color: var(--success-color); color: white; }
-    .badge { padding: 0.5rem 0.75rem; border-radius: 20px; font-weight: 500; font-size: 0.875rem; }
-    .badge-paid { background-color: rgba(62, 207, 142, 0.15); color: var(--success-color); }
-    .badge-pending { background-color: rgba(248, 182, 83, 0.15); color: var(--warning-color); }
-    .total-price { font-size: 1.5rem; font-weight: 600; color: var(--primary-color); }
-    .price-card { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: white; border-radius: var(--border-radius); padding: 1.5rem; text-align: center; margin-top: 1rem; }
-    .price-label { font-size: 1rem; opacity: 0.9; }
-    .price-value { font-size: 2rem; font-weight: 700; margin: 0.5rem 0; }
-    .price-currency { font-size: 1rem; font-weight: 400; margin-left: 0.25rem; }
-    .table { border-collapse: separate; border-spacing: 0; width: 100%; }
-    .table th { background-color: #f8f9fa; color: #506690; font-weight: 600; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px; }
-    .table th:first-child { border-top-left-radius: 0.5rem; }
-    .table th:last-child { border-top-right-radius: 0.5rem; }
-    .table td, .table th { padding: 1rem; vertical-align: middle; text-align: center; border-bottom: 1px solid var(--light-gray); }
-    .payment-method { display: inline-flex; align-items: center; font-weight: 500; }
-    .payment-method i { margin-right: 0.5rem; font-size: 1.1rem; }
-    .alert { border-radius: var(--border-radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: none; display: none; }
-    .alert-danger { background-color: rgba(226, 89, 80, 0.15); color: var(--danger-color); }
-    .alert-success { background-color: rgba(62, 207, 142, 0.15); color: var(--success-color); }
-    .alert-warning { background-color: rgba(248, 182, 83, 0.15); color: var(--warning-color); }
-    .loader-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.8); z-index: 1000; justify-content: center; align-items: center; }
-    .loader { width: 50px; height: 50px; border: 3px solid rgba(84, 105, 212, 0.2); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .empty-state { text-align: center; padding: 2rem; color: #8792a2; }
-    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
-    .empty-state-message { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
-    .empty-state-description { font-size: 0.9rem; max-width: 400px; margin: 0 auto; }
-    @media (max-width: 768px) { .app-container { padding: 1rem; } .patient-info { grid-template-columns: 1fr; } .card-header { flex-direction: column; align-items: flex-start; } .card-title { margin-bottom: 0.5rem; } }
+    /* ... (keep all existing CSS) ... */
+
+    /* Optional: Add some basic print styles */
+    @media print {
+      body * {
+        visibility: hidden; /* Hide everything by default */
+      }
+      #print-area, #print-area * {
+        visibility: visible; /* Show only the print area */
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .btn, .page-header, .card-header, .loader-container, #alertContainer {
+          display: none !important; /* Hide buttons etc when printing */
+      }
+    }
+
+    /* Basic Invoice Styling (can be expanded) */
+    .invoice-box {
+        max-width: 800px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #eee;
+        box-shadow: 0 0 10px rgba(0, 0, 0, .15);
+        font-size: 16px;
+        line-height: 24px;
+        font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+        color: #555;
+    }
+    .invoice-box table { width: 100%; line-height: inherit; text-align: left; border-collapse: collapse; }
+    .invoice-box table td { padding: 5px; vertical-align: top; }
+    .invoice-box table tr td:nth-child(2) { text-align: right; }
+    .invoice-box table tr.top table td { padding-bottom: 20px; }
+    .invoice-box table tr.top table td.title { font-size: 45px; line-height: 45px; color: #333; }
+    .invoice-box table tr.information table td { padding-bottom: 40px; }
+    .invoice-box table tr.heading td { background: #eee; border-bottom: 1px solid #ddd; font-weight: bold; text-align: center; }
+    .invoice-box table tr.details td { padding-bottom: 20px; }
+    .invoice-box table tr.item td{ border-bottom: 1px solid #eee; text-align: left; }
+    .invoice-box table tr.item.last td { border-bottom: none; }
+    .invoice-box table tr.total td { border-top: 2px solid #eee; font-weight: bold; text-align: right; }
+    .invoice-box .text-right { text-align: right; }
+     .invoice-box .text-center { text-align: center; }
+
   </style>
 </head>
 <body>
-  <!-- HTML Structure -->
-  <div class="loader-container"> <div class="loader"></div> </div>
-  <div class="app-container">
-    <div class="page-header"> <h1 class="page-title">Dashboard de Facturation</h1> <div class="clinic-logo"> <i class="fas fa-hospital-user"></i> MediClinic </div> </div>
-    <div id="alertContainer" class="alert" role="alert"></div>
-    <div class="card"> <div class="card-header"> <h5 class="card-title">Informations du Patient</h5> <div class="card-icon icon-patient"> <i class="fas fa-user"></i> </div> </div> <div class="card-body"> <div class="patient-info"> <div class="patient-info-item"> <div class="patient-info-label">Nom</div> <div class="patient-info-value" id="nom">-</div> </div> <div class="patient-info-item"> <div class="patient-info-label">Prénom</div> <div class="patient-info-value" id="prenom">-</div> </div> <div class="patient-info-item"> <div class="patient-info-label">CIN</div> <div class="patient-info-value" id="cin">-</div> </div> <div class="patient-info-item"> <div class="patient-info-label">Téléphone</div> <div class="patient-info-value" id="telephone">-</div> </div> <div class="patient-info-item"> <div class="patient-info-label">Adresse</div> <div class="patient-info-value" id="adresse">-</div> </div> <div class="patient-info-item"> <div class="patient-info-label">Ville</div> <div class="patient-info-value" id="ville">-</div> </div> <div class="patient-info-item"> <div class="patient-info-label">Date de Naissance</div> <div class="patient-info-value" id="date_naissance">-</div> </div> <div class="patient-info-item"> <div class="patient-info-label">Sexe</div> <div class="patient-info-value" id="sexe">-</div> </div> <div class="patient-info-item"> <div class="patient-info-label">Mutuelle</div> <div class="patient-info-value" id="mutuelle">-</div> </div> </div> </div> </div>
-    <div class="card"> <div class="card-header"> <h5 class="card-title">Nouvelle Facture</h5> <div class="card-icon icon-invoice"> <i class="fas fa-file-invoice"></i> </div> </div> <div class="card-body"> <div class="row"> <div class="col-md-8"> <div class="form-group mb-4"> <label for="services"><i class="fas fa-list-check me-2"></i>Services Disponibles</label> <select class="form-select" id="services" multiple></select> </div> <div class="form-group mb-4"> <label for="modePaiement"><i class="fas fa-credit-card me-2"></i>Mode de Paiement</label> <select class="form-select" id="modePaiement"> <option value="espèces">Espèces</option> <option value="carte">Carte Bancaire</option> <option value="assurance">Assurance</option> </select> </div> </div> <div class="col-md-4"> <div class="price-card"> <div class="price-label">Montant Total</div> <div class="price-value"><span id="total">0.00</span><span class="price-currency">MAD</span></div> <button id="creerFacture" class="btn btn-light w-100 mt-3"> <i class="fas fa-plus-circle me-2"></i>Créer Facture </button> </div> </div> </div> </div> </div>
-    <div class="card"> <div class="card-header"> <h5 class="card-title">Historique des Factures</h5> <div class="card-icon icon-history"> <i class="fas fa-history"></i> </div> </div> <div class="card-body"> <div class="table-responsive"> <table class="table"> <thead> <tr> <th>ID</th> <th>Montant</th> <th>Mode de Paiement</th> <th>Statut</th> <th>Date</th> <th>Action</th> </tr> </thead> <tbody id="factureBody"> <tr> <td colspan="6" class="text-center">Chargement des factures...</td> </tr> </tbody> </table> </div> </div> </div>
+  <!-- HTML Structure remains the same -->
+  <!-- ... (body content up to table) ... -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Historique des Factures</h5>
+            <div class="card-icon icon-history"> <i class="fas fa-history"></i> </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Montant</th>
+                    <th>Mode de Paiement</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th style="width: 25%;">Action</th> <!-- Wider Action column -->
+                  </tr>
+                </thead>
+                <tbody id="factureBody">
+                  <tr>
+                    <td colspan="6" class="text-center">Chargement des factures...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
   </div>
+
+  <!-- Hidden div for PDF generation -->
+  <div id="invoice-content-area" style="position: absolute; left: -9999px; top: -9999px;"></div>
+  <!-- Hidden iframe for printing -->
+  <iframe id="print-frame" name="print-frame" style="position:absolute;top:-9999px;left:-9999px;"></iframe>
+
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
-    // Configuration
+    // --- Configuration and Helpers ---
     const baseUrl = "https://workflows.aphelionxinnovations.com";
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWlkIjoiZmJmMmI1ZjctZTc3ZS00ZGZmLWJlN2UtN2ZlOGVkZmViZmY1IiwiZmlyc3ROYW1lIjoiTW91c3NhIiwibGFzdE5hbWUiOiJTYWlkaSIsInVzZXJuYW1lIjoic2FpZGkiLCJlbWFpbCI6Im1vdXNzYS5zYWlkaS4wMUBnbXppbC5jb20iLCJwYXNzd29yZCI6ImFkbWluMTIzNCIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTc0Mjk1MjMyNn0.1s_IWO-h-AKwkP0LIX8mcjdeLRwsRtgbqAchIJSRVEA";
     const urlParams = new URLSearchParams(window.location.search);
     const ipp = urlParams.get("ipp") || "IPP-1743516316438";
 
-    // Helper functions
-    function showLoader() { document.querySelector('.loader-container').style.display = 'flex'; }
-    function hideLoader() { document.querySelector('.loader-container').style.display = 'none'; }
-    function showAlert(message, type = 'danger') {
-        const alertElement = document.getElementById('alertContainer'); alertElement.className = `alert alert-${type}`; alertElement.innerHTML = `<i class="${type === 'danger' ? 'fas fa-exclamation-circle' : type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'} me-2"></i>${message}`; alertElement.style.display = 'block'; alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => { alertElement.style.display = 'none'; }, 5000); }
-
-    // API service layer
-    const apiService = {
-      async fetchPatient(patientIpp) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Patient fetch error:", e); throw e; } },
-      async fetchServices() { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/tarifs`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } const d = await res.json(); console.log("Full Services API Response (Object expected):", d); let s = []; if (typeof d === 'object' && d !== null && Array.isArray(d.services)) { console.log("Extraction: OK"); s = d.services; } else { console.error("Extraction Failed: Invalid structure.", "Type:", typeof d, "Is Null:", d === null, "Has Array:", Array.isArray(d?.services)); } console.log("Final Extracted servicesArray:", s); return { services: s }; } catch (e) { console.error("Services fetch error:", e); throw e; } },
-      async createInvoice(data) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/create-facture`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Invoice creation error:", e); throw e; } },
-      async getInvoicesByIpp(patientIpp) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Invoices fetch error:", e); throw e; } },
-      async updatePaymentStatus(factureId, etat_paiement) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Payment status update error:", e); throw e; } }
+    // Optional: Add Clinic Info here
+    const clinicInfo = {
+        name: "MediClinic",
+        address: "123 Rue de la Santé, Paris",
+        phone: "+33 1 23 45 67 89",
+        // Add more details if needed (Logo URL, etc.)
     };
 
-    // Formatters
-    function formatPaymentMode(mode) { /* ... */ switch(mode.toLowerCase()){case'espèces':return'Espèces';case'carte':return'Carte Bancaire';case'assurance':return'Assurance';default:return mode;} }
-    function getPaymentIcon(mode) { /* ... */ switch(mode.toLowerCase()){case'espèces':return'fas fa-money-bill-wave';case'carte':return'fas fa-credit-card';case'assurance':return'fas fa-shield-alt';default:return'fas fa-circle';} }
-    function formatService(service) { /* ... */ if(!service.id){return service.text;}try{const d=JSON.parse(service.id);if(d&&d.name&&d.price){return $(`<div class="d-flex justify-content-between align-items-center"><span>${d.name}</span><span class="badge bg-primary">${parseFloat(d.price).toFixed(2)} MAD</span></div>`);}else{console.warn("formatService: Invalid data",service.id);return service.text;}}catch(e){console.error("formatService Error:",e,service.id);return service.text;} }
-    function formatServiceSelection(service) { /* ... */ if(!service.id||!service.element){return service.text;}try{const d=JSON.parse(service.element.value);if(d&&d.name){return d.name;}else{console.warn("formatServiceSelection: Invalid data",service.element.value);return service.text;}}catch(e){console.error("formatServiceSelection Error:",e,service.element.value);return service.text;} }
+    function showLoader() { document.querySelector('.loader-container').style.display = 'flex'; }
+    function hideLoader() { document.querySelector('.loader-container').style.display = 'none'; }
+    function showAlert(message, type = 'danger') { /* ... as before ... */ const alertElement = document.getElementById('alertContainer'); alertElement.className = `alert alert-${type}`; alertElement.innerHTML = `<i class="${type === 'danger' ? 'fas fa-exclamation-circle' : type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'} me-2"></i>${message}`; alertElement.style.display = 'block'; alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => { alertElement.style.display = 'none'; }, 5000); }
 
-    // UI functions
-    async function loadPatientInfo() { /* ... */ if(!ipp){showAlert("IPP manquant...");return;} showLoader();try{const d=await apiService.fetchPatient(ipp);console.log("Patient API Response:",d);for(const k in d){const el=document.getElementById(k);if(el){el.textContent=d[k]||'-';}}}catch(e){showAlert(`Erreur patient: ${e.message}`);}finally{hideLoader();} }
-    async function loadServices() { /* ... */ showLoader(); try { const r = await apiService.fetchServices(); console.log("Result received by loadServices:", r); const s = r?.services; const sel = document.getElementById("services"); console.log("servicesSelect element:", sel); if (!sel) { console.error("Fatal: #services not found"); showAlert("Erreur: Liste services non trouvée."); hideLoader(); return; } sel.innerHTML = ''; if (Array.isArray(s)) { console.log(`Populating ${s.length} services.`); s.forEach(svc => { if (svc && typeof svc.id !== 'undefined' && svc.name && svc.price) { const opt = new Option(`${svc.name} - ${svc.price} MAD`, JSON.stringify({ id: svc.id, name: svc.name, price: svc.price })); sel.append(opt); } else { console.warn("Skipping invalid service:", svc); } }); } else { console.error("Error: services not array:", s); showAlert("Erreur: Données services invalides."); } console.log("Initializing select2..."); $('#services').select2({ placeholder: "Sélectionner...", allowClear: true, templateResult: formatService, templateSelection: formatServiceSelection }); console.log("Select2 initialized."); } catch (e) { console.error("Error in loadServices:", e); showAlert(`Erreur services: ${e.message}`); } finally { hideLoader(); } }
-    function updateTotal() { /* ... */ try{const d=$('#services').select2("data");const t=d.reduce((sum,s)=>{if(s.id){try{const sd=JSON.parse(s.id);return sum+parseFloat(sd.price||0);}catch(e){console.error("updateTotal Error:",e,s.id);return sum;}}return sum;},0);document.getElementById("total").textContent=t.toFixed(2);}catch(e){console.error("Error updateTotal:",e);} }
-    async function createInvoice() { /* ... */ const s=$('#services').select2("data");if(s.length===0||s.every(i=>!i.id)){showAlert("Sélectionner service(s).","warning");return;}let ids=[];try{ids=s.filter(i=>i.id).map(i=>JSON.parse(i.id).id);}catch(e){console.error("Error prep invoice:",e);showAlert("Erreur préparation facture.");return;}const p=document.getElementById("modePaiement").value;showLoader();try{const r=await apiService.createInvoice({ipp:ipp,mode_paiement:p,services:ids});console.log("Invoice Creation:",r);$('#services').val(null).trigger('change');updateTotal();showAlert("Facture créée!","success");await loadInvoices();}catch(e){showAlert(`Erreur création facture: ${e.message}`);}finally{hideLoader();} }
+    // --- API Service Layer ---
+    const apiService = {
+      async fetchPatient(patientIpp) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Patient fetch error:", e); throw e; } },
+      async fetchServices() { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/tarifs`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } const d = await res.json(); let s = []; if (typeof d === 'object' && d !== null && Array.isArray(d.services)) { s = d.services; } else { console.error("fetchServices Extraction Failed: Invalid structure."); } return { services: s }; } catch (e) { console.error("Services fetch error:", e); throw e; } },
+      async createInvoice(data) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/create-facture`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Invoice creation error:", e); throw e; } },
+      async getInvoicesByIpp(patientIpp) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Invoices fetch error:", e); throw e; } },
+      async updatePaymentStatus(factureId, etat_paiement) { /* ... */ try { const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) }); if (!res.ok) { const e = await res.json().catch(() => ({ message: res.statusText })); throw new Error(e.message || `Erreur ${res.status}`); } return await res.json(); } catch (e) { console.error("Payment status update error:", e); throw e; } },
 
-    // --- FINAL Corrected loadInvoices (Accessing nested 'json' property) ---
+      // --- New: Fetch single invoice details ---
+      async getInvoiceDetails(factureId) {
+          if (!factureId) throw new Error("Facture ID manquant.");
+          try {
+              const res = await fetch(`${baseUrl}/webhook/facture/get?facture_id=${factureId}`, {
+                  headers: { Authorization: `Bearer ${token}` }
+              });
+              if (!res.ok) {
+                  const errorData = await res.json().catch(() => ({ message: res.statusText }));
+                  throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement des détails de la facture`);
+              }
+              const details = await res.json();
+              console.log(`Invoice Details for ${factureId}:`, details);
+              // IMPORTANT: Check the structure of 'details'. Does it contain the services list directly?
+              // Adjust the return value if needed, e.g., return details[0] if it's wrapped in an array.
+              // Assuming 'details' is the object containing invoice info and possibly a 'services' array.
+              return details;
+          } catch (error) {
+              console.error("Invoice details fetch error:", error);
+              throw error;
+          }
+      }
+      // --- End New API call ---
+    };
+
+    // --- Formatters ---
+    function formatPaymentMode(mode) { /* ... */ switch(mode?.toLowerCase()){case'espèces':return'Espèces';case'carte':return'Carte Bancaire';case'assurance':return'Assurance';default:return mode||'N/A';} }
+    function getPaymentIcon(mode) { /* ... */ switch(mode?.toLowerCase()){case'espèces':return'fas fa-money-bill-wave';case'carte':return'fas fa-credit-card';case'assurance':return'fas fa-shield-alt';default:return'fas fa-circle';} }
+    function formatService(service) { /* ... */ if(!service.id){return service.text;}try{const d=JSON.parse(service.id);if(d&&d.name&&d.price){return $(`<div class="d-flex justify-content-between align-items-center"><span>${d.name}</span><span class="badge bg-primary">${parseFloat(d.price).toFixed(2)} MAD</span></div>`);}else{return service.text;}}catch(e){return service.text;} }
+    function formatServiceSelection(service) { /* ... */ if(!service.id||!service.element){return service.text;}try{const d=JSON.parse(service.element.value);if(d&&d.name){return d.name;}else{return service.text;}}catch(e){return service.text;} }
+
+    // --- UI Functions ---
+    async function loadPatientInfo() { /* ... */ if(!ipp){showAlert("IPP manquant...");return;} showLoader();try{const d=await apiService.fetchPatient(ipp);console.log("Patient API Response:",d);window.currentPatientInfo=d;/*Store patient info*/ for(const k in d){const el=document.getElementById(k);if(el){el.textContent=d[k]||'-';}}}catch(e){showAlert(`Erreur patient: ${e.message}`);}finally{hideLoader();} }
+    async function loadServices() { /* ... */ showLoader(); try { const r = await apiService.fetchServices(); const s = r?.services; const sel = document.getElementById("services"); if (!sel) { console.error("Fatal: #services not found"); return; } sel.innerHTML = ''; if (Array.isArray(s)) { s.forEach(svc => { if (svc && typeof svc.id !== 'undefined' && svc.name && svc.price) { const opt = new Option(`${svc.name} - ${svc.price} MAD`, JSON.stringify({ id: svc.id, name: svc.name, price: svc.price })); sel.append(opt); } }); } else { console.error("Error: services not array:", s); } $('#services').select2({ placeholder: "Sélectionner...", allowClear: true, templateResult: formatService, templateSelection: formatServiceSelection }); } catch (e) { console.error("Error in loadServices:", e); showAlert(`Erreur services: ${e.message}`); } finally { hideLoader(); } }
+    function updateTotal() { /* ... */ try{const d=$('#services').select2("data");const t=d.reduce((sum,s)=>{if(s.id){try{const sd=JSON.parse(s.id);return sum+parseFloat(sd.price||0);}catch(e){return sum;}}return sum;},0);document.getElementById("total").textContent=t.toFixed(2);}catch(e){console.error("Error updateTotal:",e);} }
+    async function createInvoice() { /* ... */ const s=$('#services').select2("data");if(s.length===0||s.every(i=>!i.id)){showAlert("Sélectionner service(s).","warning");return;}let ids=[];try{ids=s.filter(i=>i.id).map(i=>JSON.parse(i.id).id);}catch(e){console.error("Error prep invoice:",e);showAlert("Erreur préparation facture.");return;}const p=document.getElementById("modePaiement").value;showLoader();try{const r=await apiService.createInvoice({ipp:ipp,mode_paiement:p,services:ids});$('#services').val(null).trigger('change');updateTotal();showAlert("Facture créée!","success");await loadInvoices();}catch(e){showAlert(`Erreur création facture: ${e.message}`);}finally{hideLoader();} }
+
+    // --- Corrected loadInvoices with New Buttons ---
     async function loadInvoices() {
       if (!ipp) return;
       showLoader();
       try {
         const invoicesResponse = await apiService.getInvoicesByIpp(ipp);
-        console.log("Invoices API Response Object:", invoicesResponse);
-
         const invoices = invoicesResponse?.factures; // Extract factures array [{json:{...}}, {json:{...}}]
-
         const tableBody = document.getElementById("factureBody");
-        console.log("Invoice table body element:", tableBody);
 
-        if (!tableBody) {
-            console.error("Fatal Error: Could not find invoice table body (#factureBody)");
-            showAlert("Erreur interne: Impossible de trouver la table des factures.", "danger");
-            hideLoader();
-            return;
-        }
+        if (!tableBody) { console.error("Fatal Error: #factureBody not found"); return; }
         tableBody.innerHTML = ''; // Clear previous rows
 
         if (!Array.isArray(invoices) || invoices.length === 0) {
-          console.log("No invoices found or data is not an array.");
           tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>';
           return;
         }
 
-        console.log(`Processing ${invoices.length} invoices.`);
-
-        invoices.forEach((invoiceWrapper, index) => { // Renamed 'invoice' to 'invoiceWrapper'
-          // Access the actual invoice data from the 'json' property
-          const invoice = invoiceWrapper.json; // <<< *** ACCESS .json HERE ***
-
-          // Log the actual data object being processed
-          console.log(`Processing invoice ${index + 1} data:`, invoice);
-
-          // Check if the nested invoice object exists
-          if (!invoice) {
-              console.error(`Invoice data missing in wrapper object at index ${index}:`, invoiceWrapper);
-              // Optionally add a row indicating an error for this entry
-              const errorRow = document.createElement("tr");
-              errorRow.innerHTML = `<td colspan="6" class="text-danger text-center">Erreur de données pour facture ${index + 1}</td>`;
-              tableBody.append(errorRow);
-              return; // Skip this iteration
-          }
+        invoices.forEach((invoiceWrapper, index) => {
+          const invoice = invoiceWrapper.json;
+          if (!invoice) { console.error(`Invoice data missing at index ${index}`); return; }
 
           const row = document.createElement("tr");
-
-          // Access properties from the nested 'invoice' object using actual names from console log
           const id = invoice.id ?? 'N/A';
           const montant = invoice.montant ?? 'N/A';
           const modePaiement = invoice.mode_paiement ?? 'N/A';
           const etatPaiement = invoice.etat_paiement ?? 'N/A';
           const dateFacturation = invoice.date_facturation ?? 'N/A';
 
-          // Format values safely
           const montantFormatted = (montant !== 'N/A' && !isNaN(parseFloat(montant))) ? `${parseFloat(montant).toFixed(2)} MAD` : 'N/A';
           const dateFormatted = dateFacturation !== 'N/A' ? new Date(dateFacturation).toLocaleString() : 'N/A';
 
-          // Determine display values based on etatPaiement
           const isPaid = etatPaiement.toLowerCase() === 'payé';
           const statusBadgeClass = isPaid ? 'badge-paid' : 'badge-pending';
           const statusText = isPaid ? 'Payé' : 'En attente';
           const nextStatus = isPaid ? 'en attente' : 'payé';
-          const buttonText = isPaid ? 'Marquer comme en attente' : 'Marquer comme payé';
+          const buttonText = isPaid ? 'Marquer en attente' : 'Marquer payé';
 
-          // Ensure 'id' is suitable for the onclick function
           const numericId = parseInt(id);
-          if (isNaN(numericId)) {
-              console.error(`Invoice ${index + 1} has invalid numeric ID for button: ${id}`);
-              row.innerHTML = `<td>${id}</td><td>${montantFormatted}</td><td class="payment-method"><i class="${getPaymentIcon(modePaiement)} me-2"></i>${formatPaymentMode(modePaiement)}</td><td><span class="badge ${statusBadgeClass}">${statusText}</span></td><td>${dateFormatted}</td><td><button class="btn btn-sm btn-outline-secondary" disabled>Action Indisponible</button></td>`;
-          } else {
-              row.innerHTML = `<td>${id}</td><td>${montantFormatted}</td><td class="payment-method"><i class="${getPaymentIcon(modePaiement)} me-2"></i>${formatPaymentMode(modePaiement)}</td><td><span class="badge ${statusBadgeClass}">${statusText}</span></td><td>${dateFormatted}</td><td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${numericId}, '${nextStatus}')">${buttonText}</button></td>`;
-          }
+          const actionsDisabled = isNaN(numericId);
+
+          // Add Download and Print buttons alongside the status button
+          row.innerHTML = `
+            <td>${id}</td>
+            <td>${montantFormatted}</td>
+            <td class="payment-method"><i class="${getPaymentIcon(modePaiement)} me-2"></i>${formatPaymentMode(modePaiement)}</td>
+            <td><span class="badge ${statusBadgeClass}">${statusText}</span></td>
+            <td>${dateFormatted}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-success me-1" onclick="updateInvoiceStatus(${numericId}, '${nextStatus}')" ${actionsDisabled ? 'disabled' : ''}>${buttonText}</button>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="handleDownloadPdf(${numericId})" ${actionsDisabled ? 'disabled' : ''} title="Télécharger PDF">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="handlePrintInvoice(${numericId})" ${actionsDisabled ? 'disabled' : ''} title="Imprimer">
+                    <i class="fas fa-print"></i>
+                </button>
+            </td>
+          `;
           tableBody.append(row);
         });
-        console.log("Finished appending invoice rows.");
 
       } catch (error) {
         console.error("Error loading invoices:", error);
@@ -205,14 +232,231 @@
         hideLoader();
       }
     }
-    // --- End Corrected loadInvoices ---
+    // --- End loadInvoices ---
 
-    async function updateInvoiceStatus(id, status) { if(typeof id!=='number'||!status){console.error("Invalid args update:",id,status);showAlert("Erreur interne.");return;} showLoader();try{await apiService.updatePaymentStatus(id,status);showAlert("Statut màj!","success");loadInvoices();}catch(e){showAlert(`Erreur màj statut: ${e.message}`);}finally{hideLoader();} }
 
-    // Event listeners
+    // --- New: Generate Invoice HTML ---
+    function generateInvoiceHtml(invoiceDetails, patientInfo, clinicDetails) {
+        // IMPORTANT: Adapt this based on the ACTUAL structure of invoiceDetails from getInvoiceDetails
+        const invoice = invoiceDetails?.json || invoiceDetails; // Handle potential nesting from n8n if needed
+        const services = invoice?.services || []; // Assuming services are nested within the details
+
+        if (!invoice || !patientInfo) {
+            return '<p>Erreur: Données manquantes pour générer la facture.</p>';
+        }
+
+        // Format data for display
+        const invoiceDate = invoice.date_facturation ? new Date(invoice.date_facturation).toLocaleDateString('fr-FR') : 'N/A';
+        const totalAmount = (invoice.montant && !isNaN(parseFloat(invoice.montant))) ? parseFloat(invoice.montant).toFixed(2) : 'N/A';
+
+        let itemsHtml = '';
+        if(Array.isArray(services)) {
+            services.forEach(item => {
+                // Assuming item has 'name' and 'price' properties - VERIFY THIS
+                const itemName = item.name || 'Service inconnu';
+                const itemPrice = (item.price && !isNaN(parseFloat(item.price))) ? parseFloat(item.price).toFixed(2) : 'N/A';
+                itemsHtml += `
+                    <tr class="item">
+                        <td>${itemName}</td>
+                        <td class="text-right">${itemPrice} MAD</td>
+                    </tr>
+                `;
+            });
+        } else {
+            console.warn("Services data in invoice details is not an array:", services);
+            itemsHtml = '<tr class="item"><td colspan="2">Détail des services non disponible.</td></tr>';
+        }
+
+
+        // Build HTML structure
+        return `
+        <div class="invoice-box">
+            <table>
+                <tr class="top">
+                    <td colspan="2">
+                        <table>
+                            <tr>
+                                <td class="title">
+                                     ${clinicDetails.name || 'MediClinic'}
+                                     <!-- Optional: <img src="logo.png" style="width:100%; max-width:150px;"> -->
+                                </td>
+                                <td>
+                                    Facture #: ${invoice.id || 'N/A'}<br>
+                                    Créée le: ${invoiceDate}<br>
+                                    <!-- Due date: February 1, 2015 -->
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr class="information">
+                    <td colspan="2">
+                        <table>
+                            <tr>
+                                <td>
+                                    ${clinicDetails.address || 'Adresse Clinique'}<br>
+                                    ${clinicDetails.phone || 'Téléphone Clinique'}
+                                </td>
+                                <td>
+                                    ${patientInfo.nom || ''} ${patientInfo.prenom || ''}<br>
+                                    ${patientInfo.adresse || 'Adresse Patient'}<br>
+                                    ${patientInfo.ville || ''}<br>
+                                    ${patientInfo.telephone || ''}
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr class="heading">
+                    <td>Service</td>
+                    <td class="text-right">Prix</td>
+                </tr>
+                ${itemsHtml}
+                <tr class="total">
+                     <td></td>
+                    <td>Total: ${totalAmount} MAD</td>
+                </tr>
+                 <tr class="details">
+                     <td colspan="2" style="padding-top: 30px;">
+                        Mode de Paiement: ${formatPaymentMode(invoice.mode_paiement)}<br>
+                        Statut: ${invoice.etat_paiement === 'payé' ? 'Payé' : 'En attente'}
+                     </td>
+                </tr>
+            </table>
+        </div>
+        `;
+    }
+    // --- End Generate Invoice HTML ---
+
+
+    // --- New: Handle Download PDF ---
+    async function handleDownloadPdf(factureId) {
+        if (!factureId) return;
+        showLoader();
+        try {
+            // Fetch patient info (or use stored window.currentPatientInfo)
+            const patientData = window.currentPatientInfo || await apiService.fetchPatient(ipp);
+            // Fetch specific invoice details
+            const invoiceDetails = await apiService.getInvoiceDetails(factureId);
+
+            if (!invoiceDetails) {
+                throw new Error("Détails de la facture non trouvés.");
+            }
+
+            const invoiceHtml = generateInvoiceHtml(invoiceDetails, patientData, clinicInfo);
+
+            // Use html2pdf library
+            const element = document.createElement('div'); // Create a temporary element
+            element.innerHTML = invoiceHtml;
+
+            const opt = {
+              margin:       0.5,
+              filename:     `facture-${patientData.nom || 'patient'}-${factureId}.pdf`,
+              image:        { type: 'jpeg', quality: 0.98 },
+              html2canvas:  { scale: 2, useCORS: true }, // useCORS might be needed for images
+              jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            console.log("Generating PDF...");
+            await html2pdf().set(opt).from(element).save();
+            console.log("PDF download initiated.");
+            showAlert("Téléchargement PDF lancé.", "success");
+
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            showAlert(`Erreur PDF: ${error.message}`, "danger");
+        } finally {
+            hideLoader();
+        }
+    }
+    // --- End Handle Download PDF ---
+
+
+    // --- New: Handle Print Invoice ---
+    async function handlePrintInvoice(factureId) {
+        if (!factureId) return;
+        showLoader();
+        try {
+            // Fetch patient info (or use stored window.currentPatientInfo)
+            const patientData = window.currentPatientInfo || await apiService.fetchPatient(ipp);
+            // Fetch specific invoice details
+            const invoiceDetails = await apiService.getInvoiceDetails(factureId);
+
+             if (!invoiceDetails) {
+                throw new Error("Détails de la facture non trouvés.");
+            }
+
+            const invoiceHtml = generateInvoiceHtml(invoiceDetails, patientData, clinicInfo);
+
+            // Use iframe for printing
+            const printFrame = document.getElementById('print-frame');
+            if (printFrame && printFrame.contentWindow) {
+                const frameDoc = printFrame.contentWindow.document;
+                frameDoc.open();
+                // Write HTML and basic styles needed for the invoice
+                // Include link to Font Awesome if using icons in the invoice template
+                frameDoc.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Imprimer Facture ${factureId}</title>
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                        <style>
+                            body { margin: 0; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; }
+                            .invoice-box { max-width: 800px; margin: auto; padding: 10px; border: 1px solid #eee; font-size: 14px; line-height: 1.6; color: #555; }
+                            .invoice-box table { width: 100%; line-height: inherit; text-align: left; border-collapse: collapse; }
+                            .invoice-box table td { padding: 5px; vertical-align: top; }
+                             .invoice-box table tr td:nth-child(2) { text-align: right; }
+                            .invoice-box table tr.top table td { padding-bottom: 10px; }
+                            .invoice-box table tr.top table td.title { font-size: 30px; line-height: 30px; color: #333; }
+                            .invoice-box table tr.information table td { padding-bottom: 20px; }
+                            .invoice-box table tr.heading td { background: #eee; border-bottom: 1px solid #ddd; font-weight: bold; text-align: center; }
+                            .invoice-box table tr.item td{ border-bottom: 1px solid #eee; text-align: left; }
+                             .invoice-box table tr.item.last td { border-bottom: none; }
+                            .invoice-box table tr.total td{ border-top: 2px solid #eee; font-weight: bold; text-align: right;}
+                             .invoice-box .text-right { text-align: right; }
+                             .invoice-box .text-center { text-align: center; }
+                        </style>
+                    </head>
+                    <body>${invoiceHtml}</body>
+                    </html>
+                `);
+                frameDoc.close();
+
+                // Give browser time to render content in iframe
+                setTimeout(() => {
+                    try {
+                         printFrame.contentWindow.focus(); // Focus on the frame
+                         printFrame.contentWindow.print(); // Call print on the frame's window
+                         console.log("Print dialog initiated.");
+                    } catch(printError) {
+                         console.error("Error calling print:", printError);
+                         showAlert("Erreur lors de l'ouverture de la fenêtre d'impression.", "danger");
+                    } finally {
+                         hideLoader(); // Hide loader after print attempt
+                    }
+                }, 500); // Delay slightly (adjust if needed)
+
+            } else {
+                 throw new Error("Impossible de trouver le cadre d'impression.");
+            }
+
+        } catch (error) {
+            console.error("Error preparing print:", error);
+            showAlert(`Erreur Impression: ${error.message}`, "danger");
+            hideLoader(); // Ensure loader hides on error
+        }
+        // Note: We don't hideLoader() inside the setTimeout's try block immediately,
+        // because the print dialog pauses execution. It's hidden in the finally.
+    }
+    // --- End Handle Print Invoice ---
+
+    async function updateInvoiceStatus(id, status) { /* ... */ if(typeof id!=='number'||!status){console.error("Invalid args update:",id,status);showAlert("Erreur interne.");return;} showLoader();try{await apiService.updatePaymentStatus(id,status);showAlert("Statut màj!","success");loadInvoices();}catch(e){showAlert(`Erreur màj statut: ${e.message}`);}finally{hideLoader();} }
+
+    // --- Event listeners ---
     $(document).ready(function () {
       console.log("Document ready. Initializing loads...");
-      loadPatientInfo();
+      loadPatientInfo(); // Fetch patient info once on load
       loadServices();
       loadInvoices();
       $('#services').on('change', updateTotal);
