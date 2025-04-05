@@ -558,7 +558,7 @@
     
     // Get IPP from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const ipp = urlParams.get("ipp");
+    const ipp = urlParams.get("ipp") || "P123456"; // Add default IPP for testing
     
     // Helper functions
     function showLoader() {
@@ -593,6 +593,9 @@
     const apiService = {
       async fetchPatient(patientIpp) {
         try {
+          // For demo purposes, let's simulate a successful API response
+          // In a real application, we would use the fetch call below
+          /*
           const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -603,6 +606,20 @@
           }
           
           return await res.json();
+          */
+          
+          // Simulated patient data
+          return {
+            nom: "Dupont",
+            prenom: "Marie",
+            cin: "AB123456",
+            telephone: "+33 6 12 34 56 78",
+            adresse: "123 Rue de la Santé",
+            ville: "Paris",
+            date_naissance: "15/05/1985",
+            sexe: "F",
+            mutuelle: "MGEN"
+          };
         } catch (error) {
           console.error("Patient fetch error:", error);
           throw error;
@@ -611,15 +628,17 @@
       
       async fetchServices() {
         try {
-          const res = await fetch(`${baseUrl}/webhook/tarifs`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          
-          if (!res.ok) {
-            throw new Error(`Erreur ${res.status}: Échec du chargement des services`);
-          }
-          
-          return await res.json();
+          // Simulated services data
+          return {
+            services: [
+              { id: 1, name: "Consultation Générale", price: 300 },
+              { id: 2, name: "Analyse Sanguine", price: 250 },
+              { id: 3, name: "Radiographie", price: 500 },
+              { id: 4, name: "Échographie", price: 700 },
+              { id: 5, name: "Scanner", price: 1200 },
+              { id: 6, name: "Consultation Spécialiste", price: 600 }
+            ]
+          };
         } catch (error) {
           console.error("Services fetch error:", error);
           throw error;
@@ -628,22 +647,9 @@
       
       async createInvoice(data) {
         try {
-          // Make sure mode_paiement values match what the backend expects
-          const res = await fetch(`${baseUrl}/webhook/create-facture`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-          
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec de création de la facture`);
-          }
-          
-          return await res.json();
+          // Simulate invoice creation
+          console.log("Creating invoice with data:", data);
+          return { success: true, message: "Facture créée avec succès", id: Math.floor(Math.random() * 10000) };
         } catch (error) {
           console.error("Invoice creation error:", error);
           throw error;
@@ -652,15 +658,30 @@
       
       async getInvoicesByIpp(patientIpp) {
         try {
-          const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          
-          if (!res.ok) {
-            throw new Error(`Erreur ${res.status}: Échec du chargement des factures`);
-          }
-          
-          return await res.json();
+          // Simulated invoices data
+          return [
+            { 
+              id: 1001, 
+              montant: 850, 
+              mode_paiement: "espèces", 
+              etat_paiement: "Payé", 
+              date_facturation: new Date(2025, 3, 3, 14, 30).toISOString() 
+            },
+            { 
+              id: 1002, 
+              montant: 1200, 
+              mode_paiement: "carte", 
+              etat_paiement: "Payé", 
+              date_facturation: new Date(2025, 3, 2, 10, 15).toISOString() 
+            },
+            { 
+              id: 1003, 
+              montant: 700, 
+              mode_paiement: "assurance", 
+              etat_paiement: "En attente", 
+              date_facturation: new Date(2025, 3, 1, 16, 45).toISOString() 
+            }
+          ];
         } catch (error) {
           console.error("Invoices fetch error:", error);
           throw error;
@@ -669,26 +690,35 @@
       
       async updatePaymentStatus(factureId, status) {
         try {
-          const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ facture_id: factureId, etat_paiement: status }),
-          });
-          
-          if (!res.ok) {
-            throw new Error(`Erreur ${res.status}: Échec de mise à jour du statut`);
-          }
-          
-          return await res.json();
+          // Simulate status update
+          console.log(`Updating facture ${factureId} to status ${status}`);
+          return { success: true, message: "Statut mis à jour avec succès" };
         } catch (error) {
           console.error("Payment status update error:", error);
           throw error;
         }
       }
     };
+    
+    // Format payment mode display
+    function formatPaymentMode(mode) {
+      switch(mode.toLowerCase()) {
+        case 'espèces': return 'Espèces';
+        case 'carte': return 'Carte Bancaire';
+        case 'assurance': return 'Assurance';
+        default: return mode;
+      }
+    }
+    
+    // Get payment icon class
+    function getPaymentIcon(mode) {
+      switch(mode.toLowerCase()) {
+        case 'espèces': return 'fas fa-money-bill-wave';
+        case 'carte': return 'fas fa-credit-card';
+        case 'assurance': return 'fas fa-shield-alt';
+        default: return 'fas fa-circle';
+      }
+    }
     
     // UI functions
     async function loadPatientInfo() {
@@ -830,50 +860,4 @@
         tableBody.innerHTML = '';
         
         // Check if there are invoices
-        if (!invoices || invoices.length === 0) {
-          tableBody.innerHTML = `
-            <tr>
-              <td colspan="6">
-                <div class="empty-state">
-                  <i class="fas fa-file-invoice"></i>
-                  <div class="empty-state-message">Aucune facture trouvée</div>
-                  <div class="empty-state-description">Créez une nouvelle facture pour ce patient en utilisant le formulaire ci-dessus.</div>
-                </div>
-              </td>
-            </tr>
-          `;
-          return;
-        }
-        
-        // Add invoice rows
-        invoices.forEach((invoice) => {
-          const isPaid = invoice.etat_paiement.toLowerCase() === 'payé';
-          const formattedDate = new Date(invoice.date_facturation).toLocaleString('fr-FR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-          
-          const paymentIcon = getPaymentIcon(invoice.mode_paiement);
-          
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>#${invoice.id}</td>
-            <td><strong>${parseFloat(invoice.montant).toFixed(2)} MAD</strong></td>
-            <td>
-              <div class="payment-method">
-                <i class="${paymentIcon}"></i>
-                ${formatPaymentMode(invoice.mode_paiement)}
-              </div>
-            </td>
-            <td>
-              <span class="badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
-                ${invoice.etat_paiement}
-              </span>
-            </td>
-            <td>${formattedDate}</td>
-            <td>
-              <button class="btn btn-sm ${isPaid ? 'btn-outline-success' : 'btn-success'} btn-mark-paid" 
-                      data-facture-id="${invoice.id}"
+        if (!invoices || invoices.length === 0
