@@ -558,179 +558,129 @@
     const ipp = urlParams.get("ipp") || "IPP-1743516316438"; // Use a default IPP for testing
 
     // Helper functions
-    function showLoader() {
-      document.querySelector('.loader-container').style.display = 'flex';
-    }
-
-    function hideLoader() {
-      document.querySelector('.loader-container').style.display = 'none';
-    }
-
-    function showAlert(message, type = 'danger') {
+    function showLoader() { /* Keep as is */ document.querySelector('.loader-container').style.display = 'flex'; }
+    function hideLoader() { /* Keep as is */ document.querySelector('.loader-container').style.display = 'none'; }
+    function showAlert(message, type = 'danger') { /* Keep as is */
       const alertElement = document.getElementById('alertContainer');
       alertElement.className = `alert alert-${type}`;
-      alertElement.innerHTML = `
-        <i class="${type === 'danger' ? 'fas fa-exclamation-circle' :
-                  type === 'success' ? 'fas fa-check-circle' :
-                  'fas fa-exclamation-triangle'} me-2"></i>
-        ${message}
-      `;
+      alertElement.innerHTML = `<i class="${type === 'danger' ? 'fas fa-exclamation-circle' : type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'} me-2"></i>${message}`;
       alertElement.style.display = 'block';
       alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setTimeout(() => {
-        alertElement.style.display = 'none';
-      }, 5000);
+      setTimeout(() => { alertElement.style.display = 'none'; }, 5000);
     }
 
     // API service layer
     const apiService = {
       async fetchPatient(patientIpp) {
+        // --- Keep this function as is ---
         try {
-          const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement du patient`);
-          }
+          const res = await fetch(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } });
+          if (!res.ok) { const errorData = await res.json().catch(() => ({ message: res.statusText })); throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement du patient`); }
           return await res.json();
-        } catch (error) {
-          console.error("Patient fetch error:", error);
-          throw error;
-        }
+        } catch (error) { console.error("Patient fetch error:", error); throw error; }
       },
 
+      // --- Corrected fetchServices ---
       async fetchServices() {
         try {
           const res = await fetch(`${baseUrl}/webhook/tarifs`, {
             headers: { Authorization: `Bearer ${token}` },
           });
+
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: res.statusText }));
             throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement des services`);
           }
-          const responseData = await res.json();
+
+          const responseData = await res.json(); // This is the array: [{ status: 'success', services: [...] }]
           console.log("Full Services API Response:", responseData);
 
-          const servicesArray = responseData[0]?.services || [];
-          console.log("Extracted servicesArray:", servicesArray); // Log the extracted array
+          // --- Revised and Corrected Extraction Logic ---
+          let servicesArray = []; // Default to empty array
 
+          // Check the structure rigorously before extracting
+          if (Array.isArray(responseData) &&
+              responseData.length > 0 &&
+              typeof responseData[0] === 'object' &&
+              responseData[0] !== null &&
+              Array.isArray(responseData[0].services))
+          {
+              console.log("Extraction: responseData is valid array structure. Accessing responseData[0].services");
+              servicesArray = responseData[0].services; // Directly assign the services array
+          } else {
+              // Log specifically why the extraction failed
+              console.error("Extraction Failed: responseData structure is not as expected.",
+                  "Is Array:", Array.isArray(responseData),
+                  "Length:", responseData?.length,
+                  "First Element Type:", typeof responseData?.[0],
+                  "First Element Has Services Array:", Array.isArray(responseData?.[0]?.services)
+              );
+              // Keep servicesArray as empty [] in this case
+          }
+          // --- End Revised Extraction Logic ---
+
+          console.log("Final Extracted servicesArray before return:", servicesArray); // Log the final extracted array
+
+          // Return the object containing the correctly extracted services array
           return { services: servicesArray };
+
         } catch (error) {
           console.error("Services fetch error:", error);
-          throw error;
+          throw error; // Rethrow the error so it's caught by loadServices
         }
       },
+      // --- End Corrected fetchServices ---
+
 
       async createInvoice(data) {
+        // --- Keep this function as is ---
         try {
-          const res = await fetch(`${baseUrl}/webhook/create-facture`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-          });
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec de la création de la facture`);
-          }
+          const res = await fetch(`${baseUrl}/webhook/create-facture`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+          if (!res.ok) { const errorData = await res.json().catch(() => ({ message: res.statusText })); throw new Error(errorData.message || `Erreur ${res.status}: Échec de la création de la facture`); }
           return await res.json();
-        } catch (error) {
-          console.error("Invoice creation error:", error);
-          throw error;
-        }
+        } catch (error) { console.error("Invoice creation error:", error); throw error; }
       },
 
       async getInvoicesByIpp(patientIpp) {
-        try {
-          const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement de l'historique des factures`);
-          }
+        // --- Keep this function as is ---
+         try {
+          const res = await fetch(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`, { headers: { Authorization: `Bearer ${token}` } });
+          if (!res.ok) { const errorData = await res.json().catch(() => ({ message: res.statusText })); throw new Error(errorData.message || `Erreur ${res.status}: Échec du chargement de l'historique des factures`); }
           return await res.json();
-        } catch (error) {
-          console.error("Invoices fetch error:", error);
-          throw error;
-        }
+        } catch (error) { console.error("Invoices fetch error:", error); throw error; }
       },
 
       async updatePaymentStatus(factureId, etat_paiement) {
+        // --- Keep this function as is ---
         try {
-          const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() })
-          });
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(errorData.message || `Erreur ${res.status}: Échec de la mise à jour du statut de paiement`);
-          }
+          const res = await fetch(`${baseUrl}/webhook/facture/update-payment-status`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) });
+          if (!res.ok) { const errorData = await res.json().catch(() => ({ message: res.statusText })); throw new Error(errorData.message || `Erreur ${res.status}: Échec de la mise à jour du statut de paiement`); }
           return await res.json();
-        } catch (error) {
-          console.error("Payment status update error:", error);
-          throw error;
-        }
+        } catch (error) { console.error("Payment status update error:", error); throw error; }
       }
     };
 
     // Format payment mode display and icons
-    function formatPaymentMode(mode) {
-      // (Keep this function as is)
-      switch(mode.toLowerCase()) {
-        case 'espèces': return 'Espèces';
-        case 'carte': return 'Carte Bancaire';
-        case 'assurance': return 'Assurance';
-        default: return mode;
-      }
-    }
-
-    function getPaymentIcon(mode) {
-      // (Keep this function as is)
-      switch(mode.toLowerCase()) {
-        case 'espèces': return 'fas fa-money-bill-wave';
-        case 'carte': return 'fas fa-credit-card';
-        case 'assurance': return 'fas fa-shield-alt';
-        default: return 'fas fa-circle';
-      }
-    }
+    function formatPaymentMode(mode) { /* Keep as is */
+        switch(mode.toLowerCase()) { case 'espèces': return 'Espèces'; case 'carte': return 'Carte Bancaire'; case 'assurance': return 'Assurance'; default: return mode; } }
+    function getPaymentIcon(mode) { /* Keep as is */
+        switch(mode.toLowerCase()) { case 'espèces': return 'fas fa-money-bill-wave'; case 'carte': return 'fas fa-credit-card'; case 'assurance': return 'fas fa-shield-alt'; default: return 'fas fa-circle'; } }
 
     // UI functions
-    async function loadPatientInfo() {
-      if (!ipp) { /* ... */ return; }
+    async function loadPatientInfo() { /* Keep as is */
+      if (!ipp) { showAlert("IPP manquant dans l'URL. Veuillez spécifier un IPP valide."); return; }
       showLoader();
-      try {
-        const patientData = await apiService.fetchPatient(ipp);
-        console.log("Patient API Response:", patientData);
-        for (const key in patientData) {
-          const element = document.getElementById(key);
-          if (element) {
-            element.textContent = patientData[key] || '-';
-          }
-        }
-      } catch (error) {
-        showAlert(`Erreur lors du chargement du patient: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
-    }
+      try { const patientData = await apiService.fetchPatient(ipp); console.log("Patient API Response:", patientData); for (const key in patientData) { const element = document.getElementById(key); if (element) { element.textContent = patientData[key] || '-'; } } } catch (error) { showAlert(`Erreur lors du chargement du patient: ${error.message}`); } finally { hideLoader(); } }
 
-    // --- Revised loadServices ---
+    // --- loadServices using the corrected fetchServices ---
     async function loadServices() {
       showLoader();
       try {
-        // Assign the full result first
+        // Fetch services using the corrected apiService function
         const serviceResult = await apiService.fetchServices();
-        console.log("Result from apiService.fetchServices:", serviceResult); // Log the whole object received
+        console.log("Result received by loadServices:", serviceResult); // Log the object { services: [...] }
 
-        // Access the services property robustly
+        // Access the services array from the result object
         const services = serviceResult?.services; // Use optional chaining
 
         const servicesSelect = document.getElementById("services");
@@ -739,28 +689,32 @@
         if (!servicesSelect) {
             console.error("Fatal Error: Could not find the services select element (#services)");
             showAlert("Erreur interne: Impossible de trouver la liste des services.", "danger");
-            hideLoader(); // Make sure loader hides on fatal error
-            return; // Stop execution
+            hideLoader(); // Ensure loader hides
+            return; // Stop
         }
 
-        // Clear existing options *before* adding new ones
-        servicesSelect.innerHTML = '';
+        servicesSelect.innerHTML = ''; // Clear previous options
 
         if (Array.isArray(services)) {
-          console.log(`Populating services. Found ${services.length} services.`); // This should now log 9
+          console.log(`Populating services. Found ${services.length} services.`); // Should log 9
           services.forEach((service) => {
-            const option = new Option(
-              `${service.name} - ${service.price} MAD`,
-              JSON.stringify({id: service.id, name: service.name, price: service.price})
-            );
-            servicesSelect.append(option);
+            // Basic check for valid service object structure
+            if (service && typeof service.id !== 'undefined' && service.name && service.price) {
+                const option = new Option(
+                  `${service.name} - ${service.price} MAD`,
+                  JSON.stringify({id: service.id, name: service.name, price: service.price})
+                );
+                servicesSelect.append(option);
+            } else {
+                console.warn("Skipping invalid service object:", service);
+            }
           });
         } else {
-          console.error("Error: services data is not an array or is undefined:", services);
+          console.error("Error: services data received by loadServices is not an array or is undefined:", services);
           showAlert("Erreur interne: Format de données des services incorrect.", "danger");
         }
 
-        // Initialize Select2 *after* options are appended to the DOM:
+        // Initialize Select2 *after* options are appended
         console.log("Initializing select2 on #services");
         $('#services').select2({
           placeholder: "Sélectionner des services...",
@@ -777,189 +731,28 @@
         hideLoader();
       }
     }
-    // --- End Revised loadServices ---
+    // --- End loadServices ---
 
 
-    function formatService(service) {
-      // (Keep this function as is from previous version with try/catch)
-      if (!service.id) {
-          return service.text;
-      }
-      try {
-          const serviceData = JSON.parse(service.id);
-          if (serviceData && serviceData.name && serviceData.price) {
-              return $(`
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>${serviceData.name}</span>
-                  <span class="badge bg-primary">${parseFloat(serviceData.price).toFixed(2)} MAD</span>
-                </div>
-              `);
-          } else {
-              console.warn("formatService: Could not parse service data or missing properties", service.id);
-              return service.text;
-          }
-      } catch (e) {
-          console.error("formatService Error parsing JSON:", e, service.id);
-          return service.text;
-      }
-    }
-
-    function formatServiceSelection(service) {
-      // (Keep this function as is from previous version with try/catch)
-       if (!service.id || !service.element) {
-          return service.text;
-      }
-      try {
-          const serviceData = JSON.parse(service.element.value);
-          if (serviceData && serviceData.name) {
-              return serviceData.name;
-          } else {
-              console.warn("formatServiceSelection: Could not parse service data or missing name", service.element.value);
-              return service.text;
-          }
-      } catch (e) {
-          console.error("formatServiceSelection Error parsing JSON:", e, service.element.value);
-          return service.text;
-      }
-    }
-
-    function updateTotal() {
-      // (Keep this function as is from previous version with try/catch)
-      try {
-        const selectedServices = $('#services').select2("data");
-        const total = selectedServices.reduce((sum, service) => {
-          if (service.id) {
-            try {
-                const serviceData = JSON.parse(service.id);
-                return sum + parseFloat(serviceData.price || 0);
-            } catch (e) {
-                console.error("updateTotal Error parsing JSON:", e, service.id);
-                return sum;
-            }
-          }
-          return sum;
-        }, 0);
-        document.getElementById("total").textContent = total.toFixed(2);
-      } catch (error) {
-          console.error("Error in updateTotal:", error);
-      }
-    }
-
-    async function createInvoice() {
-      // (Keep this function as is from previous version with try/catch)
-      const selectedServices = $('#services').select2("data");
-      if (selectedServices.length === 0 || selectedServices.every(s => !s.id)) {
-        showAlert("Veuillez sélectionner au moins un service.", "warning");
-        return;
-      }
-      let serviceIds = [];
-      let totalAmount = 0; // Keep for potential future use, though API might calculate it
-      try {
-          serviceIds = selectedServices
-              .filter(service => service.id)
-              .map(service => JSON.parse(service.id).id);
-          totalAmount = selectedServices
-              .filter(service => service.id)
-              .reduce((sum, service) => {
-                  const serviceData = JSON.parse(service.id);
-                  return sum + parseFloat(serviceData.price || 0);
-              }, 0);
-      } catch (e) {
-          console.error("Error preparing invoice data:", e);
-          showAlert("Erreur lors de la préparation des données de la facture.", "danger");
-          return;
-      }
-      const paymentMode = document.getElementById("modePaiement").value;
-      showLoader();
-      try {
-        const invoiceResponse = await apiService.createInvoice({
-          ipp: ipp,
-          mode_paiement: paymentMode,
-          services: serviceIds
-        });
-        console.log("Invoice Creation Response:", invoiceResponse);
-        $('#services').val(null).trigger('change');
-        updateTotal();
-        showAlert("Facture créée avec succès!", "success");
-        await loadInvoices();
-      } catch (error) {
-        showAlert(`Erreur lors de la création de la facture: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
-    }
-
-
-    async function loadInvoices() {
-      // (Keep this function as is from previous version with checks)
-      if (!ipp) return;
-      showLoader();
-      try {
-        const invoices = await apiService.getInvoicesByIpp(ipp);
-        console.log("Invoices API Response:", invoices);
-        const tableBody = document.getElementById("factureBody");
-        tableBody.innerHTML = '';
-        if (!Array.isArray(invoices) || invoices.length === 0) {
-          tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>';
-          return;
-        }
-        invoices.forEach(invoice => {
-          const row = document.createElement("tr");
-          const id = invoice.id ?? 'N/A';
-          const montant = invoice.montant ? `${parseFloat(invoice.montant).toFixed(2)} MAD` : 'N/A';
-          const modePaiement = invoice.mode_paiement ?? 'N/A';
-          const etatPaiement = invoice.etat_paiement ?? 'N/A';
-          const dateFacturation = invoice.date_facturation ? new Date(invoice.date_facturation).toLocaleString() : 'N/A';
-          const isPaid = etatPaiement.toLowerCase() === 'payé';
-          const statusBadgeClass = isPaid ? 'badge-paid' : 'badge-pending';
-          const statusText = isPaid ? 'Payé' : 'En attente';
-          const nextStatus = isPaid ? 'en attente' : 'payé';
-          const buttonText = isPaid ? 'Marquer comme en attente' : 'Marquer comme payé';
-
-          row.innerHTML = `
-            <td>${id}</td>
-            <td>${montant}</td>
-            <td class="payment-method"><i class="${getPaymentIcon(modePaiement)} me-2"></i>${formatPaymentMode(modePaiement)}</td>
-            <td><span class="badge ${statusBadgeClass}">${statusText}</span></td>
-            <td>${dateFacturation}</td>
-            <td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${id}, '${nextStatus}')">${buttonText}</button></td>
-          `;
-          tableBody.append(row);
-        });
-      } catch (error) {
-        console.error("Error loading invoices:", error);
-        showAlert(`Erreur lors du chargement des factures: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
-    }
-
-    async function updateInvoiceStatus(factureId, status) {
-      // (Keep this function as is from previous version with checks)
-      if (typeof factureId !== 'number' || !status) {
-            console.error("Invalid arguments for updateInvoiceStatus:", factureId, status);
-            showAlert("Erreur interne: Impossible de mettre à jour le statut.", "danger");
-            return;
-        }
-      showLoader();
-      try {
-        await apiService.updatePaymentStatus(factureId, status);
-        showAlert("Statut mis à jour avec succès!", "success");
-        loadInvoices();
-      } catch (error) {
-        showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`);
-      } finally {
-        hideLoader();
-      }
-    }
+    function formatService(service) { /* Keep as is */
+        if (!service.id) { return service.text; } try { const serviceData = JSON.parse(service.id); if (serviceData && serviceData.name && serviceData.price) { return $(`<div class="d-flex justify-content-between align-items-center"><span>${serviceData.name}</span><span class="badge bg-primary">${parseFloat(serviceData.price).toFixed(2)} MAD</span></div>`); } else { console.warn("formatService: Could not parse service data or missing properties", service.id); return service.text; } } catch (e) { console.error("formatService Error parsing JSON:", e, service.id); return service.text; } }
+    function formatServiceSelection(service) { /* Keep as is */
+        if (!service.id || !service.element) { return service.text; } try { const serviceData = JSON.parse(service.element.value); if (serviceData && serviceData.name) { return serviceData.name; } else { console.warn("formatServiceSelection: Could not parse service data or missing name", service.element.value); return service.text; } } catch (e) { console.error("formatServiceSelection Error parsing JSON:", e, service.element.value); return service.text; } }
+    function updateTotal() { /* Keep as is */
+        try { const selectedServices = $('#services').select2("data"); const total = selectedServices.reduce((sum, service) => { if (service.id) { try { const serviceData = JSON.parse(service.id); return sum + parseFloat(serviceData.price || 0); } catch (e) { console.error("updateTotal Error parsing JSON:", e, service.id); return sum; } } return sum; }, 0); document.getElementById("total").textContent = total.toFixed(2); } catch (error) { console.error("Error in updateTotal:", error); } }
+    async function createInvoice() { /* Keep as is */
+        const selectedServices = $('#services').select2("data"); if (selectedServices.length === 0 || selectedServices.every(s => !s.id)) { showAlert("Veuillez sélectionner au moins un service.", "warning"); return; } let serviceIds = []; try { serviceIds = selectedServices .filter(service => service.id) .map(service => JSON.parse(service.id).id); } catch (e) { console.error("Error preparing invoice data:", e); showAlert("Erreur lors de la préparation des données de la facture.", "danger"); return; } const paymentMode = document.getElementById("modePaiement").value; showLoader(); try { const invoiceResponse = await apiService.createInvoice({ ipp: ipp, mode_paiement: paymentMode, services: serviceIds }); console.log("Invoice Creation Response:", invoiceResponse); $('#services').val(null).trigger('change'); updateTotal(); showAlert("Facture créée avec succès!", "success"); await loadInvoices(); } catch (error) { showAlert(`Erreur lors de la création de la facture: ${error.message}`); } finally { hideLoader(); } }
+    async function loadInvoices() { /* Keep as is */
+        if (!ipp) return; showLoader(); try { const invoices = await apiService.getInvoicesByIpp(ipp); console.log("Invoices API Response:", invoices); const tableBody = document.getElementById("factureBody"); tableBody.innerHTML = ''; if (!Array.isArray(invoices) || invoices.length === 0) { tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture trouvée.</td></tr>'; return; } invoices.forEach(invoice => { const row = document.createElement("tr"); const id = invoice.id ?? 'N/A'; const montant = invoice.montant ? `${parseFloat(invoice.montant).toFixed(2)} MAD` : 'N/A'; const modePaiement = invoice.mode_paiement ?? 'N/A'; const etatPaiement = invoice.etat_paiement ?? 'N/A'; const dateFacturation = invoice.date_facturation ? new Date(invoice.date_facturation).toLocaleString() : 'N/A'; const isPaid = etatPaiement.toLowerCase() === 'payé'; const statusBadgeClass = isPaid ? 'badge-paid' : 'badge-pending'; const statusText = isPaid ? 'Payé' : 'En attente'; const nextStatus = isPaid ? 'en attente' : 'payé'; const buttonText = isPaid ? 'Marquer comme en attente' : 'Marquer comme payé'; row.innerHTML = `<td>${id}</td><td>${montant}</td><td class="payment-method"><i class="${getPaymentIcon(modePaiement)} me-2"></i>${formatPaymentMode(modePaiement)}</td><td><span class="badge ${statusBadgeClass}">${statusText}</span></td><td>${dateFacturation}</td><td><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${id}, '${nextStatus}')">${buttonText}</button></td>`; tableBody.append(row); }); } catch (error) { console.error("Error loading invoices:", error); showAlert(`Erreur lors du chargement des factures: ${error.message}`); } finally { hideLoader(); } }
+    async function updateInvoiceStatus(factureId, status) { /* Keep as is */
+        if (typeof factureId !== 'number' || !status) { console.error("Invalid arguments for updateInvoiceStatus:", factureId, status); showAlert("Erreur interne: Impossible de mettre à jour le statut.", "danger"); return; } showLoader(); try { await apiService.updatePaymentStatus(factureId, status); showAlert("Statut mis à jour avec succès!", "success"); loadInvoices(); } catch (error) { showAlert(`Erreur lors de la mise à jour du statut: ${error.message}`); } finally { hideLoader(); } }
 
     // Event listeners
-    $(document).ready(function () {
+    $(document).ready(function () { /* Keep as is */
       console.log("Document ready. Initializing loads...");
       loadPatientInfo();
-      loadServices(); // Load services which includes select2 initialization
+      loadServices();
       loadInvoices();
-
       $('#services').on('change', updateTotal);
       $('#creerFacture').on('click', createInvoice);
       console.log("Event listeners attached.");
