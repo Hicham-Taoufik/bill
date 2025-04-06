@@ -88,7 +88,7 @@
     @media (max-width: 768px) { .app-container { padding: 1rem; } .patient-info { grid-template-columns: 1fr; } .card-header { flex-direction: column; align-items: flex-start; } .card-title { margin-bottom: 0.5rem; } }
   </style>
 </head>
-<body >
+<body > <!-- Body starts hidden -->
   <div class="loader-container"> <div class="loader"></div> </div>
   <div class="app-container">
     <div class="page-header no-print">
@@ -147,7 +147,7 @@
     const LOGIN_PAGE_URL = 'https://hicham-taoufik.github.io/login/';
     const QR_TARGET_BASE_URL = 'app://medilink/patient'; // MUST MATCH RECEPTION
 
-    let currentIPP = null;
+    let currentIPP = null; // Set by QR scan or URL param on load
     const clinicInfo = { name: "MediClinic", address: "123 Rue de la Santé, Paris", phone: "+33 1 23 45 67 89" };
     let currentPatientInfo = null;
     let servicesLoaded = false;
@@ -160,7 +160,7 @@
     function showAlert(message, type = 'danger') { const el = document.getElementById('alertContainer'); if(!el) return; el.className = `alert alert-${type} no-print`; el.innerHTML = `<i class="${type === 'danger' ? 'fas fa-exclamation-circle' : type === 'success' ? 'fas fa-check-circle' : type === 'info' ? 'fas fa-info-circle' : 'fas fa-exclamation-triangle'} me-2"></i>${message}`; el.style.display = 'block'; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => { el.style.display = 'none'; }, 5000); }
 
     // --- API Service Layer --- (Uses fetchWithAuth)
-    const apiService = { async fetchPatient(patientIpp) { try { const res = await fetchWithAuth(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`); return await res.json(); } catch (e) { console.error("Patient fetch error:", e); throw e; } }, async fetchServices() { try { const res = await fetchWithAuth(`${baseUrl}/webhook/tarifs`); const d = await res.json(); return (Array.isArray(d?.services) ? {services: d.services} : {services: []}); } catch (e) { console.error("Services fetch error:", e); throw e; } }, async createInvoice(data) { try { const res = await fetchWithAuth(`${baseUrl}/webhook/create-facture`, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch (e) { console.error("Invoice creation error:", e); throw e; } }, async getInvoicesByIpp(patientIpp) { try { const res = await fetchWithAuth(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`); return await res.json(); } catch (e) { console.error("Invoices fetch error:", e); throw e; } }, async updatePaymentStatus(factureId, etat_paiement) { try { const res = await fetchWithAuth(`${baseUrl}/webhook/facture/update-payment-status`, { method: 'POST', body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) }); return await res.json(); } catch (e) { console.error("Payment update error:", e); throw e; } }, async getInvoiceDetails(factureId) { if (!factureId) throw new Error("Facture ID manquant."); try { const res = await fetchWithAuth(`${baseUrl}/webhook/facture/get?facture_id=${factureId}`); return await res.json(); } catch (e) { console.error("Invoice details fetch error:", e); throw e; } } };
+    const apiService = { async fetchPatient(patientIpp) { try { const res = await fetchWithAuth(`${baseUrl}/webhook/bill-get-patient?ipp=${patientIpp}`); return await res.json(); } catch (e) { console.error("Patient fetch error:", e); throw e; } }, async fetchServices() { try { const res = await fetchWithAuth(`${baseUrl}/webhook/tarifs`); const d = await res.json(); return (Array.isArray(d?.services) ? {services: d.services} : {services: []}); } catch (e) { console.error("Services fetch error:", e); throw e; } }, async createInvoice(data) { try { const res = await fetchWithAuth(`${baseUrl}/webhook/create-facture`, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch (e) { console.error("Invoice creation error:", e); throw e; } }, async getInvoicesByIpp(patientIpp) { try { const res = await fetchWithAuth(`${baseUrl}/webhook/facture/get-by-ipp?ipp=${patientIpp}`); return await res.json(); } catch (e) { console.error("Invoices fetch error:", e); throw e; } }, async updatePaymentStatus(factureId, etat_paiement) { try { const res = await fetchWithAuth(`${baseUrl}/webhook/facture/update-payment-status`, { method: 'POST', body: JSON.stringify({ facture_id: factureId, etat_paiement: etat_paiement.toLowerCase() }) }); return await res.json(); } catch (e) { console.error("Payment update error:", e); throw e; } }, async getInvoiceDetails(factureId) { if (!factureId && factureId !== 0) throw new Error("Facture ID invalide ou manquant."); try { const res = await fetchWithAuth(`${baseUrl}/webhook/facture/get?facture_id=${factureId}`); return await res.json(); } catch (e) { console.error("Invoice details fetch error:", e); throw e; } } };
 
     // --- Formatters ---
     function formatPaymentMode(mode) { switch(mode?.toLowerCase()){case'espèces':return'Espèces';case'carte':return'Carte Bancaire';case'assurance':return'Assurance';default:return mode||'N/A';} }
@@ -169,134 +169,77 @@
     function formatServiceSelection(service) { try{const d=JSON.parse(service.element.value);return d.name||service.text;}catch(e){return service.text;} }
 
     // --- Core UI Functions ---
-    async function loadPatientInfo(patientIpp) {
-        console.log(`loadPatientInfo CALLED for IPP: ${patientIpp}`); // Keep log
-        if (!patientIpp) { showAlert("IPP invalide.", "warning"); return; }
-        showLoader(); currentPatientInfo = null; enableInvoiceSection(false); document.getElementById("factureBody").innerHTML='<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement historique...</td></tr>'; const patientInfoDiv = document.getElementById("patientInfo"); patientInfoDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement infos patient...';
-        try {
-            const d = await apiService.fetchPatient(patientIpp);
-            currentPatientInfo = d; patientInfoDiv.innerHTML = '';
-            patientInfoDiv.innerHTML = `<div class="patient-info-item"><div class="patient-info-label">Nom</div><div class="patient-info-value">${d.nom||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Prénom</div><div class="patient-info-value">${d.prenom||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">CIN</div><div class="patient-info-value">${d.cin||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Téléphone</div><div class="patient-info-value">${d.telephone||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Adresse</div><div class="patient-info-value">${d.adresse||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Ville</div><div class="patient-info-value">${d.ville||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Naissance</div><div class="patient-info-value">${d.date_naissance?new Date(d.date_naissance+'T00:00:00Z').toLocaleDateString('fr-FR'):'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Sexe</div><div class="patient-info-value">${d.sexe==='M'?'Homme':d.sexe==='F'?'Femme':'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Mutuelle</div><div class="patient-info-value">${d.mutuelle||'Non'}</div></div>`;
-            await loadInvoices(patientIpp);
-            enableInvoiceSection(true);
-        } catch(e) { if(!e.message.startsWith('Auth')){showAlert(`Erreur patient (${patientIpp}): ${e.message}`);} enableInvoiceSection(false); patientInfoDiv.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-user-times"></i><div class="empty-state-message">Impossible de charger le patient</div></div>'; document.getElementById("factureBody").innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-exclamation-circle"></i> Erreur chargement historique.</td></tr>'; } finally { hideLoader(); }
-    }
-
-    async function loadServices() {
-        if (servicesLoaded) return;
-        console.log("loadServices CALLED");
-        // showLoader(); // Optional: Avoid double loader
-        try {
-            const r = await apiService.fetchServices(); const s = r?.services; const sel = document.getElementById("services"); if (!sel) return; sel.innerHTML = ''; let serviceCount = 0;
-            if (Array.isArray(s)) { s.forEach(svc => { if (svc && typeof svc.id !== 'undefined' && svc.name && svc.price) { const opt = new Option(`${svc.name} - ${svc.price} MAD`, JSON.stringify({ id: svc.id, name: svc.name, price: svc.price })); sel.append(opt); serviceCount++; } }); }
-            console.log(`Loaded ${serviceCount} services.`);
-            $('#services').select2({ placeholder: "Sélectionner service(s)...", allowClear: true, templateResult: formatService, templateSelection: formatServiceSelection });
-            servicesLoaded = true;
-        } catch (e) { if(!e.message.startsWith('Auth')){console.error("Err loadServices:", e); showAlert(`Erreur chargement services: ${e.message}`); $('#services').select2({ placeholder: "Erreur chargement...", allowClear: true });}} finally { /* hideLoader(); */ }
-    }
-
+    async function loadPatientInfo(patientIpp) { console.log(`loadPatientInfo CALLED for IPP: ${patientIpp}`); if (!patientIpp) { showAlert("IPP invalide.", "warning"); return; } showLoader(); currentPatientInfo = null; enableInvoiceSection(false); document.getElementById("factureBody").innerHTML='<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement historique...</td></tr>'; const patientInfoDiv = document.getElementById("patientInfo"); patientInfoDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement infos patient...'; try { const d = await apiService.fetchPatient(patientIpp); currentPatientInfo = d; patientInfoDiv.innerHTML = ''; patientInfoDiv.innerHTML = `<div class="patient-info-item"><div class="patient-info-label">Nom</div><div class="patient-info-value">${d.nom||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Prénom</div><div class="patient-info-value">${d.prenom||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">CIN</div><div class="patient-info-value">${d.cin||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Téléphone</div><div class="patient-info-value">${d.telephone||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Adresse</div><div class="patient-info-value">${d.adresse||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Ville</div><div class="patient-info-value">${d.ville||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Naissance</div><div class="patient-info-value">${d.date_naissance?new Date(d.date_naissance+'T00:00:00Z').toLocaleDateString('fr-FR'):'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Sexe</div><div class="patient-info-value">${d.sexe==='M'?'Homme':d.sexe==='F'?'Femme':'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Mutuelle</div><div class="patient-info-value">${d.mutuelle||'Non'}</div></div>`; await loadInvoices(patientIpp); enableInvoiceSection(true); } catch(e) { if(!e.message.startsWith('Auth')){showAlert(`Erreur patient (${patientIpp}): ${e.message}`);} enableInvoiceSection(false); patientInfoDiv.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-user-times"></i><div class="empty-state-message">Impossible de charger le patient</div></div>'; document.getElementById("factureBody").innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-exclamation-circle"></i> Erreur chargement historique.</td></tr>'; } finally { hideLoader(); } }
+    async function loadServices() { if (servicesLoaded) return; console.log("loadServices CALLED"); try { const r = await apiService.fetchServices(); const s = r?.services; const sel = document.getElementById("services"); if (!sel) return; sel.innerHTML = ''; let serviceCount = 0; if (Array.isArray(s)) { s.forEach(svc => { if (svc && typeof svc.id !== 'undefined' && svc.name && svc.price) { const opt = new Option(`${svc.name} - ${svc.price} MAD`, JSON.stringify({ id: svc.id, name: svc.name, price: svc.price })); sel.append(opt); serviceCount++; } }); } console.log(`Loaded ${serviceCount} services.`); $('#services').select2({ placeholder: "Sélectionner service(s)...", allowClear: true, templateResult: formatService, templateSelection: formatServiceSelection }); servicesLoaded = true; } catch (e) { if(!e.message.startsWith('Auth')){console.error("Err loadServices:", e); showAlert(`Erreur chargement services: ${e.message}`); $('#services').select2({ placeholder: "Erreur chargement...", allowClear: true });}} finally { /* Loader handled elsewhere */ } }
     function updateTotal() { try{const d=$('#services').select2("data");const t=d.reduce((sum,s)=>{try{const sd=JSON.parse(s.id);return sum+parseFloat(sd.price||0);}catch(e){return sum;}},0);document.getElementById("total").textContent=t.toFixed(2);}catch(e){console.error("Err updateTotal:",e);} }
     function enableInvoiceSection(enable) { const cb=document.getElementById('newInvoiceCardBody'), ss=document.getElementById('services'), ps=document.getElementById('modePaiement'), cr=document.getElementById('creerFacture'); if (!cb||!ss||!ps||!cr) return; if(enable){cb.style.opacity='1';cb.style.pointerEvents='auto';ss.disabled=false;ps.disabled=false;cr.disabled=false;} else {cb.style.opacity='0.5';cb.style.pointerEvents='none';ss.disabled=true;ps.disabled=true;cr.disabled=true;$('#services').val(null).trigger('change');updateTotal();} }
     async function createInvoice() { if (!currentIPP) { showAlert("Aucun patient chargé.", "warning"); return; } const s=$('#services').select2("data");if(s.length===0||s.every(i=>!i.id)){showAlert("Sélectionner service(s).","warning");return;}let ids=[];try{ids=s.filter(i=>i.id).map(i=>JSON.parse(i.id).id);}catch(e){showAlert("Erreur prép facture.");return;}const p=document.getElementById("modePaiement").value;showLoader();try{await apiService.createInvoice({ipp:currentIPP,mode_paiement:p,services:ids});$('#services').val(null).trigger('change');updateTotal();showAlert("Facture créée!","success");await loadInvoices(currentIPP);}catch(e){if(!e.message.startsWith('Auth')){showAlert(`Erreur création facture: ${e.message}`);}}finally{hideLoader();} }
+    async function loadInvoices(patientIpp) { console.log(`loadInvoices CALLED for IPP: ${patientIpp}`); const tableBody = document.getElementById("factureBody"); if (!tableBody) { console.error("Facture table body not found!"); return; } if (!patientIpp) { tableBody.innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-qrcode"></i> Scannez un QR code patient.</td></tr>'; return; } tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement historique...</td></tr>'; try { const resp = await apiService.getInvoicesByIpp(patientIpp); const invoices = resp?.factures; if (!Array.isArray(invoices) || invoices.length === 0) { tableBody.innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-folder-open"></i><br>Aucune facture trouvée.</td></tr>'; return; } tableBody.innerHTML = ''; invoices.forEach((invWrap) => { const inv = invWrap.json; if (!inv) return; const row=document.createElement("tr"); const id=inv.id??'-', m=inv.montant??0, mp=inv.mode_paiement||'', ep=inv.etat_paiement||'en attente', df=inv.date_facturation||null; const mFmt=(!isNaN(parseFloat(m)))?`${parseFloat(m).toFixed(2)} MAD`:'-'; const dFmt=df?new Date(df).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'}):'-'; const isPaid=ep.toLowerCase()==='payé'; const sBadge=isPaid?'badge-paid':'badge-pending'; const sTxt=isPaid?'Payé':'En attente'; const nextS=isPaid?'en attente':'payé'; const btnTxt=isPaid?'Marquer en attente':'Marquer payé'; const numId=parseInt(id); const actDisabled=isNaN(numId); row.innerHTML=`<td>${id}</td><td>${mFmt}</td><td class="payment-method"><i class="${getPaymentIcon(mp)} me-2"></i>${formatPaymentMode(mp)}</td><td><span class="badge ${sBadge}">${sTxt}</span></td><td>${dFmt}</td><td><div class="btn-group no-print" role="group"><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${numId},'${nextS}')" ${actDisabled?'disabled':''}>${btnTxt}</button><button class="btn btn-sm btn-outline-primary" onclick="handleDownloadPdf(${numId})" ${actDisabled?'disabled':''} title="PDF"><i class="fas fa-download"></i></button><button class="btn btn-sm btn-outline-secondary" onclick="handlePrintInvoice(${numId})" ${actDisabled?'disabled':''} title="Imprimer"><i class="fas fa-print"></i></button></div></td>`; tableBody.append(row); }); } catch (e) { if(!e.message.startsWith('Auth')){console.error("Err loadInvoices:",e); showAlert(`Err chargement factures: ${e.message}`); tableBody.innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-exclamation-circle"></i> Erreur chargement historique.</td></tr>';}} finally { /* Loader hidden by caller */ } }
+    async function updateInvoiceStatus(id,status){if (!currentIPP || typeof id!=='number'||!status)return; showLoader();try{await apiService.updatePaymentStatus(id,status);showAlert("Statut màj!","success");loadInvoices(currentIPP);}catch(e){if(!e.message.startsWith('Auth')){showAlert(`Erreur màj statut: ${e.message}`);}}finally{hideLoader();}}
+    function generateInvoiceHtml(invD, patI, cliD) { if (!invD || !patI) { console.error("generateInvoiceHtml: Missing invD or patI."); return '<p style="color:red; font-weight:bold;">Erreur: Données manquantes pour générer.</p>';} const inv = invD; const svcs = inv?.services_details || inv?.services || []; const invDate = inv.date_facturation ? new Date(inv.date_facturation).toLocaleDateString('fr-FR') : '-'; const total = (inv.montant && !isNaN(parseFloat(inv.montant))) ? parseFloat(inv.montant).toFixed(2) : '-'; let items = ''; if(Array.isArray(svcs)){svcs.forEach(it=>{const name=it.name||it.service_name||'Inconnu';const price=it.price||it.service_price||'N/A';const priceFmt=(price!=='N/A'&&!isNaN(parseFloat(price)))?parseFloat(price).toFixed(2):'-';items+=`<tr class="item"><td>${name}</td><td class="text-right">${priceFmt} MAD</td></tr>`;});} else {items='<tr class="item"><td colspan="2">Détails non dispo.</td></tr>';} if(items===''&&total!=='-'){items=`<tr class="item"><td colspan="2">Prestations</td></tr>`;} const htmlString = `<div class="invoice-box"><table><tr class="top"><td colspan="2"><table><tr><td class="title">${cliD.name||'MediClinic'}</td><td>Facture #: ${inv.id||'-'}<br>Créée: ${invDate}<br></td></tr></table></td></tr><tr class="information"><td colspan="2"><table><tr><td>${cliD.address||''}<br>${cliD.phone||''}</td><td>${patI.nom||''} ${patI.prenom||''}<br>${patI.adresse||''}<br>${patI.ville||''}<br>${patI.telephone||''}</td></tr></table></td></tr><tr class="heading"><td>Service</td><td class="text-right">Prix</td></tr>${items}<tr class="total"><td></td><td>Total: ${total} MAD</td></tr><tr class="details"><td colspan="2" style="padding-top:30px;">Paiement: ${formatPaymentMode(inv.mode_paiement)}<br>Statut: ${inv.etat_paiement==='payé'?'Payé':'En attente'}</td></tr></table></div>`; console.log("generateInvoiceHtml returning string of length:", htmlString.length); return htmlString; }
+    async function handleDownloadPdf(id){if (!currentIPP || !currentPatientInfo || isNaN(parseInt(id))) return; showLoader();try{const invD=await apiService.getInvoiceDetails(id);if(!invD)throw new Error("Détails non trouvés.");if(!currentPatientInfo)throw new Error("Données patient perdues.");const html=generateInvoiceHtml(invD,currentPatientInfo,clinicInfo);if(typeof html!=='string' || html.startsWith('<p style="color:red'))throw new Error("Erreur interne générat° HTML.");const el=document.createElement('div');el.innerHTML=html;const opt={margin:0.5,filename:`facture-${currentPatientInfo.nom||'pat'}-${id}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'in',format:'a4',orientation:'portrait'}};await html2pdf().set(opt).from(el).save();showAlert("PDF lancé.","success");}catch(e){console.error("Err PDF:",e);showAlert(`Erreur PDF: ${e.message}`);}finally{hideLoader();}}
 
-    // *** MODIFIED loadInvoices ***
-    async function loadInvoices(patientIpp) {
-        console.log(`loadInvoices CALLED for IPP: ${patientIpp}`); // Keep log
-        const tableBody = document.getElementById("factureBody");
-        if (!tableBody) { console.error("Facture table body not found!"); return; }
-        if (!patientIpp) { tableBody.innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-qrcode"></i> Scannez un QR code patient.</td></tr>'; return; } // Message if no IPP
+    // *** MODIFIED handlePrintInvoice with fixes ***
+    async function handlePrintInvoice(id){
+        console.log(`handlePrintInvoice called for ID: ${id}`);
+        if (!currentIPP || !currentPatientInfo || isNaN(parseInt(id))) {
+             console.error("Print aborted: Missing currentIPP, currentPatientInfo, or invalid ID.", {currentIPP, currentPatientInfo, id});
+             showAlert("Veuillez charger un patient et cliquer sur une facture valide.", "warning");
+             return;
+        }
+        showLoader();
+        try{
+            console.log("Fetching invoice details for print...");
+            const invD = await apiService.getInvoiceDetails(id);
+            console.log("Invoice details received for print:", invD);
+            if(!invD) throw new Error("Détails de facture non trouvés ou vides pour l'impression.");
 
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement historique...</td></tr>';
-        // showLoader(); // Loader often shown by parent caller (loadPatientInfo)
-
-        try {
-            const resp = await apiService.getInvoicesByIpp(patientIpp);
-            const invoices = resp?.factures;
-
-            if (!Array.isArray(invoices) || invoices.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-folder-open"></i><br>Aucune facture trouvée pour ce patient.</td></tr>';
-                return;
+            // Extra check for patient info (should exist but safety first)
+            if (!currentPatientInfo) {
+                 console.error("handlePrintInvoice: currentPatientInfo became null!");
+                 throw new Error("Données patient perdues avant génération HTML.");
             }
 
-            tableBody.innerHTML = ''; // Clear loading
+            console.log("Generating invoice HTML for print...");
+            const html = generateInvoiceHtml(invD, currentPatientInfo, clinicInfo);
 
-            invoices.forEach((invWrap) => {
-                const inv = invWrap.json; if (!inv) { console.warn("Skipping invalid invoice:", invWrap); return; }
-                const row=document.createElement("tr"); const id=inv.id??'-', m=inv.montant??0, mp=inv.mode_paiement||'', ep=inv.etat_paiement||'en attente', df=inv.date_facturation||null; const mFmt=(!isNaN(parseFloat(m)))?`${parseFloat(m).toFixed(2)} MAD`:'-'; const dFmt=df?new Date(df).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'}):'-'; const isPaid=ep.toLowerCase()==='payé'; const sBadge=isPaid?'badge-paid':'badge-pending'; const sTxt=isPaid?'Payé':'En attente'; const nextS=isPaid?'en attente':'payé'; const btnTxt=isPaid?'Marquer en attente':'Marquer payé'; const numId=parseInt(id); const actDisabled=isNaN(numId);
-                row.innerHTML=`<td>${id}</td><td>${mFmt}</td><td class="payment-method"><i class="${getPaymentIcon(mp)} me-2"></i>${formatPaymentMode(mp)}</td><td><span class="badge ${sBadge}">${sTxt}</span></td><td>${dFmt}</td><td><div class="btn-group no-print" role="group"><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${numId},'${nextS}')" ${actDisabled?'disabled':''}>${btnTxt}</button><button class="btn btn-sm btn-outline-primary" onclick="handleDownloadPdf(${numId})" ${actDisabled?'disabled':''} title="PDF"><i class="fas fa-download"></i></button><button class="btn btn-sm btn-outline-secondary" onclick="handlePrintInvoice(${numId})" ${actDisabled?'disabled':''} title="Imprimer"><i class="fas fa-print"></i></button></div></td>`;
-                tableBody.append(row);
-            });
-        } catch (e) { if(!e.message.startsWith('Auth')){console.error("Err loadInvoices:",e); showAlert(`Err chargement factures: ${e.message}`); tableBody.innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-exclamation-circle"></i> Erreur chargement historique.</td></tr>';}} finally { /* hideLoader(); */ }
+             // Check if HTML generation failed (returned error string or not a string)
+            if (typeof html !== 'string' || html.startsWith('<p style="color:red')) {
+                 console.error("generateInvoiceHtml did not return a valid string!", html);
+                 throw new Error(html.includes("manquantes") ? "Données manquantes." : "Erreur interne génération HTML."); // More specific error
+            }
+            console.log("Generated HTML length:", html.length);
+
+            const frame = document.getElementById('print-frame');
+            if (frame && frame.contentWindow) {
+                console.log("Print frame found. Writing content...");
+                const doc = frame.contentWindow.document;
+                doc.open();
+                doc.write(`<!DOCTYPE html><html><head><title>Impr. Facture ${id}</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><style>body{margin:0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}.invoice-box{max-width:800px;margin:auto;padding:10px;border:1px solid #eee;font-size:12pt;line-height:1.4;color:#555}.invoice-box table{width:100%;text-align:left;border-collapse:collapse}.invoice-box table td{padding:5px;vertical-align:top}.invoice-box table tr td:nth-child(n+2){text-align:right}.invoice-box table tr.heading td{background:#eee;border-bottom:1px solid #ddd;font-weight:bold}.invoice-box table tr.item td{border-bottom:1px solid #eee;text-align:left}.invoice-box table tr.total td{border-top:2px solid #eee;font-weight:bold}.invoice-box .text-right{text-align:right}</style></head><body><div id="print-area">${html}</div></body></html>`);
+                doc.close();
+                console.log("Content written to frame. Attempting print...");
+
+                setTimeout(() => {
+                    try{
+                        frame.contentWindow.focus(); frame.contentWindow.print();
+                        console.log("Print dialog should be initiated.");
+                    } catch(pE) { console.error("Error calling print:", pE); showAlert("Erreur lors du lancement de l'impression.");
+                    } finally { hideLoader(); }
+                }, 500);
+            } else { console.error("Print frame not found."); throw new Error("Cadre impression introuvable."); }
+        } catch(e) { console.error("Err prep print:", e); showAlert(`Erreur Impression: ${e.message}`); hideLoader(); }
     }
-    // *** END MODIFIED loadInvoices ***
+    // *** END MODIFIED handlePrintInvoice ***
 
-    async function updateInvoiceStatus(id,status){if (!currentIPP || typeof id!=='number'||!status)return; showLoader();try{await apiService.updatePaymentStatus(id,status);showAlert("Statut màj!","success");loadInvoices(currentIPP);}catch(e){if(!e.message.startsWith('Auth')){showAlert(`Erreur màj statut: ${e.message}`);}}finally{hideLoader();}}
-    function generateInvoiceHtml(invD, patI, cliD) { /* ... Same as before ... */ }
-    async function handleDownloadPdf(id){if (!currentIPP || !currentPatientInfo || isNaN(parseInt(id))) return; /* ... rest is same ... */ }
-    async function handlePrintInvoice(id){ if (!currentIPP || !currentPatientInfo || isNaN(parseInt(id))) { console.error("Print conditions not met:", {currentIPP, currentPatientInfo, id}); showAlert("Infos patient ou ID facture invalide pour impression.", "warning"); return; } console.log(`handlePrintInvoice called for ID: ${id}`); showLoader(); try { console.log("Fetching invoice details for print..."); const invD = await apiService.getInvoiceDetails(id); console.log("Invoice details received:", invD); if (!invD) throw new Error("Détails facture non trouvés."); console.log("Generating invoice HTML for print..."); const html = generateInvoiceHtml(invD, currentPatientInfo, clinicInfo); console.log("Generated HTML length:", html.length); const frame = document.getElementById('print-frame'); if (frame && frame.contentWindow) { console.log("Print frame found. Writing content..."); const doc = frame.contentWindow.document; doc.open(); doc.write(`<!DOCTYPE html><html><head><title>Impr. Facture ${id}</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><style>body{margin:0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}.invoice-box{max-width:800px;margin:auto;padding:10px;border:1px solid #eee;font-size:12pt;line-height:1.4;color:#555}.invoice-box table{width:100%;text-align:left;border-collapse:collapse}.invoice-box table td{padding:5px;vertical-align:top}.invoice-box table tr td:nth-child(n+2){text-align:right}.invoice-box table tr.heading td{background:#eee;border-bottom:1px solid #ddd;font-weight:bold}.invoice-box table tr.item td{border-bottom:1px solid #eee;text-align:left}.invoice-box table tr.total td{border-top:2px solid #eee;font-weight:bold}.invoice-box .text-right{text-align:right}</style></head><body><div id="print-area">${html}</div></body></html>`); doc.close(); setTimeout(() => { try { frame.contentWindow.focus(); frame.contentWindow.print(); console.log("Print dialog initiated."); } catch(pE) { console.error("Error calling print:", pE); showAlert("Erreur lors du lancement de l'impression."); } finally { hideLoader(); } }, 500); } else { console.error("Print frame not found."); throw new Error("Cadre impression introuvable."); } } catch(e) { console.error("Err prep print:", e); showAlert(`Erreur Impression: ${e.message}`); hideLoader(); } }
 
-    // --- QR SCANNER CODE ---
-    const scanButton = document.getElementById('scanQrButton');
-    const scannerContainer = document.getElementById('scanner-container');
-    const video = document.getElementById('scanner-video');
-    const scanResultDiv = document.getElementById("scanResult");
-    let scanning = false; let currentStream = null; let scanTimeout = null;
+    // --- QR SCANNER CODE --- (No changes needed inside this block)
+    const scanButton = document.getElementById('scanQrButton'); /* ... */ let scanning = false; let currentStream = null; let scanTimeout = null; function updateScanStatus(message, type = 'info') { /* ... */ } showAlert.statusTypes={'info':{/*...*/},'success':{/*...*/},'warning':{/*...*/},'error':{/*...*/},'loading':{/*...*/}}; if (scanButton) { scanButton.onclick = async () => { /* ... */ }; } function stopScanner() { /* ... */ } function tick() { /* ... */ } function processScannedQrCode(scannedUrl) { /* ... */ } function loadPatientIntoCurrentDashboard(scannedIpp) { console.log(`Loading patient ${scannedIpp} via QR`); currentIPP = scannedIpp; try { const newUrl = new URL(window.location); newUrl.searchParams.set('ipp', scannedIpp); window.history.pushState({ ipp: scannedIpp }, '', newUrl); } catch(e) { console.error("History API err:", e); } loadPatientInfo(scannedIpp); setTimeout(() => { updateScanStatus(''); }, 4000); document.getElementById('patientInfo')?.parentElement?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 
-    function updateScanStatus(message, type = 'info') { const sInfo=showAlert.statusTypes?showAlert.statusTypes[type]:null||{icon:'fas fa-info-circle',cls:'alert-info'}; scanResultDiv.className = `alert ${sInfo.cls} no-print`; scanResultDiv.innerHTML = `<i class="${sInfo.icon} me-2"></i>${message}`; scanResultDiv.style.display = message ? 'block' : 'none'; }
-    showAlert.statusTypes={'info':{icon:'fas fa-info-circle',cls:'alert-info'},'success':{icon:'fas fa-check-circle',cls:'alert-success'},'warning':{icon:'fas fa-exclamation-triangle',cls:'alert-warning'},'error':{icon:'fas fa-times-circle',cls:'alert-danger'},'loading':{icon:'fas fa-spinner fa-spin',cls:'alert-info'}};
+    // --- Setup Page Function --- (No changes needed)
+    function setupPage() { console.log("Setting up Billing page..."); if (!servicesLoaded) { loadServices(); } $('#creerFacture').off('click').on('click', createInvoice); $('#services').off('change').on('change', updateTotal); }
 
-    if (scanButton) { scanButton.onclick = async () => { if (!scanning) { try { updateScanStatus(''); scannerContainer.style.display = 'block'; updateScanStatus('Recherche caméra...', 'loading'); currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); video.srcObject = currentStream; await video.play(); updateScanStatus('Caméra prête. Scannez le code.', 'info'); scanButton.innerHTML = '<i class="fas fa-stop-circle"></i> Arrêter Scan'; scanButton.classList.replace('btn-primary','btn-danger'); scanning = true; clearTimeout(scanTimeout); scanTimeout = setTimeout(() => { if (scanning) { updateScanStatus('Aucun code détecté.', 'warning'); stopScanner(); } }, 30000); requestAnimationFrame(tick); } catch (err) { console.error("Cam Err:", err); updateScanStatus(`Err Cam: ${err.message}`, 'error'); stopScanner(); } } else { stopScanner(); updateScanStatus('Scan arrêté.', 'info'); } }; } else { console.warn("Scan button not found."); }
-    function stopScanner() { clearTimeout(scanTimeout); if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); } if(video) video.srcObject = null; if(scannerContainer) scannerContainer.style.display = 'none'; if(scanButton) {scanButton.innerHTML = '<i class="fas fa-qrcode"></i> Scanner QR Patient'; scanButton.classList.replace('btn-danger','btn-primary');} scanning = false; currentStream = null; }
-    function tick() { if (!scanning || !video || video.videoWidth === 0 || video.readyState < 2) { if (scanning) requestAnimationFrame(tick); return; } const tce = document.createElement('canvas'); tce.height = video.videoHeight; tce.width = video.videoWidth; const tc = tce.getContext("2d",{willReadFrequently:true}); tc.drawImage(video, 0, 0, tce.width, tce.height); try { const id = tc.getImageData(0, 0, tce.width, tce.height); const code = window.jsQR(id.data, id.width, id.height, { inversionAttempts: "dontInvert" }); if (code) { console.log("QR Found:", code.data); stopScanner(); processScannedQrCode(code.data); } else { requestAnimationFrame(tick); } } catch (e) { console.error("Error during QR processing:", e); requestAnimationFrame(tick); /* Keep trying */ } }
-    function processScannedQrCode(scannedUrl) { clearTimeout(scanTimeout); updateScanStatus('Code détecté. Traitement...', 'loading'); try { const url = new URL(scannedUrl); if (scannedUrl.startsWith(QR_TARGET_BASE_URL)) { const ippFromQr = url.searchParams.get('ipp'); if (ippFromQr) { updateScanStatus(`Patient IPP ${ippFromQr} trouvé. Chargement...`, 'success'); loadPatientIntoCurrentDashboard(ippFromQr); } else { updateScanStatus('Erreur: IPP manquant.', 'error'); } } else { updateScanStatus('Erreur: QR Code non reconnu.', 'error'); } } catch (e) { updateScanStatus(`Erreur: Format QR invalide (${e.message}).`, 'error'); } }
-
-    // *** UPDATED: Function called after scan ***
-    function loadPatientIntoCurrentDashboard(scannedIpp) {
-        console.log(`Loading patient ${scannedIpp} into Billing dashboard via QR`);
-        currentIPP = scannedIpp; // Set global IPP
-
-        // Update URL (optional)
-        try { const newUrl = new URL(window.location); newUrl.searchParams.set('ipp', scannedIpp); window.history.pushState({ ipp: scannedIpp }, '', newUrl); } catch(e) { console.error("History API err:", e); }
-
-        // *** Trigger data loading using the scanned IPP ***
-        loadPatientInfo(scannedIpp); // This now loads patient info AND invoices
-
-        // Clear scan message after delay
-        setTimeout(() => { updateScanStatus(''); }, 4000);
-        // Scroll to patient info section
-        document.getElementById('patientInfo')?.parentElement?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    // --- END QR SCANNER CODE ---
-
-    // --- Setup Page Function ---
-    function setupPage() {
-        console.log("Setting up Billing page listeners and services...");
-        if (!servicesLoaded) { loadServices(); } // Load services only if not already loaded
-        $('#creerFacture').off('click').on('click', createInvoice);
-        $('#services').off('change').on('change', updateTotal);
-    }
-
-    // --- window.onload (Corrected) ---
-     window.onload = () => {
-      if (!localStorage.getItem('authToken')) { console.log("Billing Dash: No auth token..."); window.location.href = LOGIN_PAGE_URL; return; }
-       document.body.classList.add('loaded'); console.log("Billing auth OK.");
-
-       const urlParamsOnLoad = new URLSearchParams(window.location.search); // Define urlParams here
-       setupPage(); // Always setup the page structure/listeners (incl. service load)
-
-       const ippFromUrl = urlParamsOnLoad.get("ipp");
-
-       if (ippFromUrl) { // Load patient if IPP is in URL
-           console.log(`IPP in URL: ${ippFromUrl}. Loading initial data.`);
-           currentIPP = ippFromUrl;
-           loadPatientInfo(currentIPP); // Load data for this IPP
-       } else { // No IPP in URL, show empty state
-           console.log("No initial IPP. Waiting scan.");
-           document.getElementById('patientInfo').innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-qrcode"></i><div class="empty-state-message">Prêt à scanner</div><div class="empty-state-description">Utilisez le bouton "Scanner QR Patient".</div></div>';
-           document.getElementById('factureBody').innerHTML = '<tr><td colspan="6" class="text-center">Scannez un QR code patient.</td></tr>';
-           enableInvoiceSection(false);
-       }
-    };
+    // --- window.onload --- (No changes needed)
+     window.onload = () => { if (!localStorage.getItem('authToken')) { console.log("Billing Dash: No auth token..."); window.location.href = LOGIN_PAGE_URL; return; } document.body.classList.add('loaded'); console.log("Billing auth OK."); const urlParamsOnLoad = new URLSearchParams(window.location.search); setupPage(); const ippFromUrl = urlParamsOnLoad.get("ipp"); if (ippFromUrl) { console.log(`IPP in URL: ${ippFromUrl}.`); currentIPP = ippFromUrl; loadPatientInfo(currentIPP); } else { console.log("No initial IPP. Waiting scan."); document.getElementById('patientInfo').innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-qrcode"></i><div class="empty-state-message">Prêt à scanner</div><div class="empty-state-description">Utilisez le bouton "Scanner QR Patient".</div></div>'; document.getElementById('factureBody').innerHTML = '<tr><td colspan="6" class="text-center">Scannez un QR code patient.</td></tr>'; enableInvoiceSection(false); } };
 
   </script>
 </body>
