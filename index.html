@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
-    /* --- CSS --- */
+    /* --- CSS (No changes from previous version) --- */
     :root { --primary-color: #5469d4; --secondary-color: #7795f8; --success-color: #3ecf8e; --danger-color: #e25950; --warning-color: #f8b653; --info-color: #6baaee; --light-color: #f8f9fb; --dark-color: #212529; --light-gray: #eaecef; --border-radius: 0.75rem; --box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08); --transition: all 0.3s ease; }
     body { background-color: #f9fafc; font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; padding: 0; margin: 0; min-height: 100vh; color: #324054; visibility: hidden; }
     body.loaded { visibility: visible; }
@@ -68,7 +68,7 @@
     .alert-danger { background-color: rgba(226, 89, 80, 0.15); color: var(--danger-color); }
     .alert-success { background-color: rgba(62, 207, 142, 0.15); color: var(--success-color); }
     .alert-warning { background-color: rgba(248, 182, 83, 0.15); color: var(--warning-color); }
-    .alert-info { background-color: rgba(107, 170, 238, 0.15); color: var(--info-color); border-left: 4px solid var(--info-color);} /* Added info style */
+    .alert-info { background-color: rgba(107, 170, 238, 0.15); color: var(--info-color); border-left: 4px solid var(--info-color);}
     .loader-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.8); z-index: 1000; justify-content: center; align-items: center; }
     .loader { width: 50px; height: 50px; border: 3px solid rgba(84, 105, 212, 0.2); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -101,7 +101,7 @@
         <div class="card-body">
             <div class="qr-scanner-section"> <button id="scanQrButton" class="btn btn-primary"> <i class="fas fa-qrcode"></i> Scanner QR Patient </button>
                 <div id="scanner-container"> <video id="scanner-video" playsinline></video> </div>
-                <div id="scanResult" class="alert" style="margin-top: 15px;"></div> <!-- Use alert classes for messages -->
+                <div id="scanResult" class="alert" style="margin-top: 15px;"></div>
             </div>
         </div>
     </div>
@@ -111,8 +111,7 @@
         <div class="card-header"> <h5 class="card-title">Informations du Patient</h5> <div class="card-icon icon-patient"> <i class="fas fa-user"></i> </div> </div>
         <div class="card-body">
             <div id="patientInfo" class="patient-info">
-                <!-- Initial Empty State -->
-                <div class="empty-state" style="grid-column: 1 / -1;"> <i class="fas fa-qrcode"></i> <div class="empty-state-message">Prêt à scanner</div> <div class="empty-state-description">Utilisez le bouton "Scanner QR Patient" pour charger les informations.</div> </div>
+                <div class="empty-state" style="grid-column: 1 / -1;"> <i class="fas fa-qrcode"></i> <div class="empty-state-message">Prêt à scanner</div> <div class="empty-state-description">Utilisez le bouton "Scanner QR Patient".</div> </div>
             </div>
         </div>
     </div>
@@ -120,13 +119,13 @@
     <!-- New Invoice Card -->
     <div class="card no-print">
         <div class="card-header"> <h5 class="card-title">Nouvelle Facture</h5> <div class="card-icon icon-invoice"> <i class="fas fa-file-invoice"></i> </div> </div>
-        <div class="card-body" id="newInvoiceCardBody" style="opacity: 0.5; pointer-events: none;"> <!-- Initially disabled --> <div class="row"> <div class="col-md-8"> <div class="form-group mb-4"> <label for="services"><i class="fas fa-list-check me-2"></i>Services</label> <select class="form-select" id="services" multiple disabled></select> </div> <div class="form-group mb-4"> <label for="modePaiement"><i class="fas fa-credit-card me-2"></i>Mode Paiement</label> <select class="form-select" id="modePaiement" disabled> <option value="espèces">Espèces</option> <option value="carte">Carte Bancaire</option> <option value="assurance">Assurance</option> </select> </div> </div> <div class="col-md-4"> <div class="price-card"> <div class="price-label">Montant Total</div> <div class="price-value"><span id="total">0.00</span><span class="price-currency">MAD</span></div> <button id="creerFacture" class="btn btn-light w-100 mt-3" disabled> <i class="fas fa-plus-circle me-2"></i>Créer Facture </button> </div> </div> </div> </div>
+        <div class="card-body" id="newInvoiceCardBody" style="opacity: 0.5; pointer-events: none;"> <div class="row"> <div class="col-md-8"> <div class="form-group mb-4"> <label for="services"><i class="fas fa-list-check me-2"></i>Services</label> <select class="form-select" id="services" multiple disabled></select> </div> <div class="form-group mb-4"> <label for="modePaiement"><i class="fas fa-credit-card me-2"></i>Mode Paiement</label> <select class="form-select" id="modePaiement" disabled> <option value="espèces">Espèces</option> <option value="carte">Carte Bancaire</option> <option value="assurance">Assurance</option> </select> </div> </div> <div class="col-md-4"> <div class="price-card"> <div class="price-label">Montant Total</div> <div class="price-value"><span id="total">0.00</span><span class="price-currency">MAD</span></div> <button id="creerFacture" class="btn btn-light w-100 mt-3" disabled> <i class="fas fa-plus-circle me-2"></i>Créer Facture </button> </div> </div> </div> </div>
     </div>
 
     <!-- Invoice History Card -->
-    <div class="card"> <!-- Potentially keep printable -->
+    <div class="card">
         <div class="card-header"> <h5 class="card-title">Historique des Factures</h5> <div class="card-icon icon-history"> <i class="fas fa-history"></i> </div> </div>
-        <div class="card-body"> <div class="table-responsive"> <table class="table"> <thead> <tr> <th>ID</th> <th>Montant</th> <th>Mode Paiement</th> <th>Statut</th> <th>Date</th> <th class="no-print" style="width: 25%;">Action</th> </tr> </thead> <tbody id="factureBody"> <tr> <td colspan="6" class="text-center">Scannez un QR code patient pour voir l'historique.</td> </tr> </tbody> </table> </div> </div>
+        <div class="card-body"> <div class="table-responsive"> <table class="table"> <thead> <tr> <th>ID</th> <th>Montant</th> <th>Mode Paiement</th> <th>Statut</th> <th>Date</th> <th class="no-print" style="width: 25%;">Action</th> </tr> </thead> <tbody id="factureBody"> <tr> <td colspan="6" class="text-center">Scannez un QR code patient.</td> </tr> </tbody> </table> </div> </div>
     </div>
   </div>
 
@@ -146,9 +145,10 @@
     const LOGIN_PAGE_URL = 'https://hicham-taoufik.github.io/login/';
     const QR_TARGET_BASE_URL = 'app://medilink/patient'; // MUST MATCH RECEPTION
 
-    let currentIPP = null; // Set by QR scan or URL param
+    let currentIPP = null; // Will be set by QR scan or URL param on load
     const clinicInfo = { name: "MediClinic", address: "123 Rue de la Santé, Paris", phone: "+33 1 23 45 67 89" };
     let currentPatientInfo = null;
+    let servicesLoaded = false; // Flag
 
     // --- Auth & Helpers ---
     function fetchWithAuth(url, options={}) { const token = localStorage.getItem('authToken'); if (!token) { console.error('Billing: No token.'); alert('Session expirée.'); window.location.href = LOGIN_PAGE_URL; return Promise.reject(new Error('Token non trouvé.')); } const headers = { ...options.headers, 'Authorization': `Bearer ${token}` }; if (options.body && !(options.body instanceof FormData)) { headers['Content-Type'] = 'application/json'; } else if (options.body instanceof FormData) { delete headers['Content-Type']; } return fetch(url, { ...options, headers: headers }) .then(response => { if (response.status === 401 || response.status === 403) { console.error('Billing: Auth error:', response.status); localStorage.removeItem('authToken'); alert('Session invalide.'); window.location.href = LOGIN_PAGE_URL; throw new Error(`Auth failed: ${response.status}`); } if (!response.ok) { return response.text().then(text => { throw new Error(`Erreur ${response.status}: ${text || response.statusText}`); }); } return response; }); }
@@ -167,12 +167,111 @@
     function formatServiceSelection(service) { try{const d=JSON.parse(service.element.value);return d.name||service.text;}catch(e){return service.text;} }
 
     // --- Core UI Functions ---
-    async function loadPatientInfo(patientIpp) { console.log(`loadPatientInfo CALLED for IPP: ${patientIpp}`); if (!patientIpp) { showAlert("IPP invalide.", "warning"); return; } showLoader(); currentPatientInfo = null; enableInvoiceSection(false); document.getElementById("factureBody").innerHTML='<tr><td colspan="6" class="text-center">Chargement historique...</td></tr>'; const patientInfoDiv = document.getElementById("patientInfo"); patientInfoDiv.innerHTML = 'Chargement infos patient...'; try { const d = await apiService.fetchPatient(patientIpp); currentPatientInfo = d; patientInfoDiv.innerHTML = ''; patientInfoDiv.innerHTML = `<div class="patient-info-item"><div class="patient-info-label">Nom</div><div class="patient-info-value">${d.nom||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Prénom</div><div class="patient-info-value">${d.prenom||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">CIN</div><div class="patient-info-value">${d.cin||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Téléphone</div><div class="patient-info-value">${d.telephone||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Adresse</div><div class="patient-info-value">${d.adresse||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Ville</div><div class="patient-info-value">${d.ville||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Naissance</div><div class="patient-info-value">${d.date_naissance?new Date(d.date_naissance+'T00:00:00Z').toLocaleDateString('fr-FR'):'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Sexe</div><div class="patient-info-value">${d.sexe==='M'?'Homme':d.sexe==='F'?'Femme':'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Mutuelle</div><div class="patient-info-value">${d.mutuelle||'Non'}</div></div>`; enableInvoiceSection(true); await loadInvoices(patientIpp); } catch(e) { if(!e.message.startsWith('Auth')){showAlert(`Erreur patient (${patientIpp}): ${e.message}`);} enableInvoiceSection(false); patientInfoDiv.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-user-times"></i><div class="empty-state-message">Impossible de charger le patient</div></div>'; document.getElementById("factureBody").innerHTML = '<tr><td colspan="6">Erreur chargement historique.</td></tr>'; } finally { hideLoader(); } }
-    async function loadServices() { console.log("loadServices CALLED"); showLoader(); try { const r = await apiService.fetchServices(); const s = r?.services; const sel = document.getElementById("services"); if (!sel) return; sel.innerHTML = ''; if (Array.isArray(s)) { s.forEach(svc => { if (svc && typeof svc.id !== 'undefined' && svc.name && svc.price) { const opt = new Option(`${svc.name} - ${svc.price} MAD`, JSON.stringify({ id: svc.id, name: svc.name, price: svc.price })); sel.append(opt); } }); } $('#services').select2({ placeholder: "Sélectionner...", allowClear: true, templateResult: formatService, templateSelection: formatServiceSelection }); } catch (e) { if(!e.message.startsWith('Auth')){console.error("Err loadServices:", e); showAlert(`Erreur services: ${e.message}`);}} finally { hideLoader(); } }
+    async function loadPatientInfo(patientIpp) {
+        console.log(`loadPatientInfo CALLED for IPP: ${patientIpp}`); // Keep log
+        if (!patientIpp) { showAlert("IPP invalide pour charger le patient.", "warning"); return; }
+        showLoader(); currentPatientInfo = null; enableInvoiceSection(false); document.getElementById("factureBody").innerHTML='<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement historique...</td></tr>';
+        const patientInfoDiv = document.getElementById("patientInfo");
+        patientInfoDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement infos patient...';
+        try {
+            const d = await apiService.fetchPatient(patientIpp);
+            currentPatientInfo = d; // Store globally
+            patientInfoDiv.innerHTML = ''; // Clear loading/empty state
+            patientInfoDiv.innerHTML = `<div class="patient-info-item"><div class="patient-info-label">Nom</div><div class="patient-info-value">${d.nom||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Prénom</div><div class="patient-info-value">${d.prenom||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">CIN</div><div class="patient-info-value">${d.cin||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Téléphone</div><div class="patient-info-value">${d.telephone||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Adresse</div><div class="patient-info-value">${d.adresse||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Ville</div><div class="patient-info-value">${d.ville||'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Naissance</div><div class="patient-info-value">${d.date_naissance?new Date(d.date_naissance+'T00:00:00Z').toLocaleDateString('fr-FR'):'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Sexe</div><div class="patient-info-value">${d.sexe==='M'?'Homme':d.sexe==='F'?'Femme':'-'}</div></div><div class="patient-info-item"><div class="patient-info-label">Mutuelle</div><div class="patient-info-value">${d.mutuelle||'Non'}</div></div>`;
+            await loadInvoices(patientIpp); // Load invoices AFTER patient info is loaded
+            enableInvoiceSection(true); // Enable form only after patient and invoices loaded
+        } catch(e) {
+            if(!e.message.startsWith('Auth')){showAlert(`Erreur patient (${patientIpp}): ${e.message}`);}
+            enableInvoiceSection(false);
+            patientInfoDiv.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-user-times"></i><div class="empty-state-message">Impossible de charger le patient</div></div>';
+            document.getElementById("factureBody").innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-exclamation-circle"></i> Erreur chargement historique.</td></tr>';
+        } finally {
+            hideLoader();
+        }
+    }
+
+    async function loadServices() {
+        if (servicesLoaded) return; // Prevent multiple loads
+        console.log("loadServices CALLED");
+        // showLoader(); // Optional: Avoid double loader if loadPatientInfo shows one
+        try {
+            const r = await apiService.fetchServices();
+            const s = r?.services;
+            const sel = document.getElementById("services");
+            if (!sel) return;
+            sel.innerHTML = '';
+            let serviceCount = 0;
+            if (Array.isArray(s)) {
+                s.forEach(svc => {
+                    if (svc && typeof svc.id !== 'undefined' && svc.name && svc.price) {
+                        const opt = new Option(`${svc.name} - ${svc.price} MAD`, JSON.stringify({ id: svc.id, name: svc.name, price: svc.price }));
+                        sel.append(opt);
+                        serviceCount++;
+                    }
+                });
+            }
+            console.log(`Loaded ${serviceCount} services.`);
+            $('#services').select2({ placeholder: "Sélectionner service(s)...", allowClear: true, templateResult: formatService, templateSelection: formatServiceSelection });
+            servicesLoaded = true; // Mark as loaded
+        } catch (e) {
+            if(!e.message.startsWith('Auth')){
+                console.error("Err loadServices:", e);
+                showAlert(`Erreur chargement services: ${e.message}`);
+                 $('#services').select2({ placeholder: "Erreur chargement...", allowClear: true });
+            }
+        } finally {
+           // hideLoader();
+        }
+    }
+
     function updateTotal() { try{const d=$('#services').select2("data");const t=d.reduce((sum,s)=>{try{const sd=JSON.parse(s.id);return sum+parseFloat(sd.price||0);}catch(e){return sum;}},0);document.getElementById("total").textContent=t.toFixed(2);}catch(e){console.error("Err updateTotal:",e);} }
     function enableInvoiceSection(enable) { const cb=document.getElementById('newInvoiceCardBody'), ss=document.getElementById('services'), ps=document.getElementById('modePaiement'), cr=document.getElementById('creerFacture'); if (!cb||!ss||!ps||!cr) return; if(enable){cb.style.opacity='1';cb.style.pointerEvents='auto';ss.disabled=false;ps.disabled=false;cr.disabled=false;} else {cb.style.opacity='0.5';cb.style.pointerEvents='none';ss.disabled=true;ps.disabled=true;cr.disabled=true;$('#services').val(null).trigger('change');updateTotal();} }
     async function createInvoice() { if (!currentIPP) { showAlert("Aucun patient chargé.", "warning"); return; } const s=$('#services').select2("data");if(s.length===0||s.every(i=>!i.id)){showAlert("Sélectionner service(s).","warning");return;}let ids=[];try{ids=s.filter(i=>i.id).map(i=>JSON.parse(i.id).id);}catch(e){showAlert("Erreur prép facture.");return;}const p=document.getElementById("modePaiement").value;showLoader();try{await apiService.createInvoice({ipp:currentIPP,mode_paiement:p,services:ids});$('#services').val(null).trigger('change');updateTotal();showAlert("Facture créée!","success");await loadInvoices(currentIPP);}catch(e){if(!e.message.startsWith('Auth')){showAlert(`Erreur création facture: ${e.message}`);}}finally{hideLoader();} }
-    async function loadInvoices(patientIpp) { console.log(`loadInvoices CALLED for IPP: ${patientIpp}`); if (!patientIpp) return; showLoader(); try { const resp = await apiService.getInvoicesByIpp(patientIpp); const invoices = resp?.factures; const tbody = document.getElementById("factureBody"); if (!tbody) return; tbody.innerHTML = ''; if (!Array.isArray(invoices) || invoices.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune facture.</td></tr>'; return; } invoices.forEach((invWrap) => { const inv = invWrap.json; if (!inv) return; const row=document.createElement("tr"); const id=inv.id??'N/A', m=inv.montant??'N/A', mp=inv.mode_paiement??'N/A', ep=inv.etat_paiement??'N/A', df=inv.date_facturation??'N/A'; const mFmt=(m!=='N/A'&&!isNaN(parseFloat(m)))?`${parseFloat(m).toFixed(2)} MAD`:'N/A'; const dFmt=df!=='N/A'?new Date(df).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'}):'N/A'; const isPaid=ep.toLowerCase()==='payé'; const sBadge=isPaid?'badge-paid':'badge-pending'; const sTxt=isPaid?'Payé':'En attente'; const nextS=isPaid?'en attente':'payé'; const btnTxt=isPaid?'Marquer en attente':'Marquer payé'; const numId=parseInt(id); const actDisabled=isNaN(numId); row.innerHTML=`<td>${id}</td><td>${mFmt}</td><td class="payment-method"><i class="${getPaymentIcon(mp)} me-2"></i>${formatPaymentMode(mp)}</td><td><span class="badge ${sBadge}">${sTxt}</span></td><td>${dFmt}</td><td><div class="btn-group no-print" role="group"><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${numId},'${nextS}')" ${actDisabled?'disabled':''}>${btnTxt}</button><button class="btn btn-sm btn-outline-primary" onclick="handleDownloadPdf(${numId})" ${actDisabled?'disabled':''} title="PDF"><i class="fas fa-download"></i></button><button class="btn btn-sm btn-outline-secondary" onclick="handlePrintInvoice(${numId})" ${actDisabled?'disabled':''} title="Imprimer"><i class="fas fa-print"></i></button></div></td>`; tbody.append(row); }); } catch (e) { if(!e.message.startsWith('Auth')){console.error("Err loadInvoices:",e); showAlert(`Err chargement factures: ${e.message}`); document.getElementById("factureBody").innerHTML = '<tr><td colspan="6">Erreur chargement historique.</td></tr>'; }} finally { hideLoader(); } }
+
+    // *** MODIFIED loadInvoices ***
+    async function loadInvoices(patientIpp) {
+        console.log(`loadInvoices CALLED for IPP: ${patientIpp}`);
+        if (!patientIpp) {
+             document.getElementById("factureBody").innerHTML = '<tr><td colspan="6" class="text-center">IPP invalide pour historique.</td></tr>';
+             return;
+        }
+        const tableBody = document.getElementById("factureBody");
+        if (!tableBody) { console.error("Facture table body not found!"); return; }
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement historique...</td></tr>';
+        // showLoader(); // Loader likely already shown by loadPatientInfo
+
+        try {
+            const resp = await apiService.getInvoicesByIpp(patientIpp);
+            const invoices = resp?.factures; // Array of { json: {...} }
+
+            if (!Array.isArray(invoices) || invoices.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-folder-open"></i><br>Aucune facture trouvée pour ce patient.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = ''; // Clear loading message
+
+            invoices.forEach((invWrap) => {
+                const inv = invWrap.json;
+                if (!inv) { console.warn("Skipping invalid invoice wrapper:", invWrap); return; }
+                const row=document.createElement("tr");
+                const id=inv.id??'-', m=inv.montant??0, mp=inv.mode_paiement||'', ep=inv.etat_paiement||'en attente', df=inv.date_facturation||null;
+                const mFmt=(!isNaN(parseFloat(m)))?`${parseFloat(m).toFixed(2)} MAD`:'-'; const dFmt=df?new Date(df).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'}):'-'; const isPaid=ep.toLowerCase()==='payé'; const sBadge=isPaid?'badge-paid':'badge-pending'; const sTxt=isPaid?'Payé':'En attente'; const nextS=isPaid?'en attente':'payé'; const btnTxt=isPaid?'Marquer en attente':'Marquer payé'; const numId=parseInt(id); const actDisabled=isNaN(numId);
+                row.innerHTML=`<td>${id}</td><td>${mFmt}</td><td class="payment-method"><i class="${getPaymentIcon(mp)} me-2"></i>${formatPaymentMode(mp)}</td><td><span class="badge ${sBadge}">${sTxt}</span></td><td>${dFmt}</td><td><div class="btn-group no-print" role="group"><button class="btn btn-sm btn-outline-success" onclick="updateInvoiceStatus(${numId},'${nextS}')" ${actDisabled?'disabled':''}>${btnTxt}</button><button class="btn btn-sm btn-outline-primary" onclick="handleDownloadPdf(${numId})" ${actDisabled?'disabled':''} title="PDF"><i class="fas fa-download"></i></button><button class="btn btn-sm btn-outline-secondary" onclick="handlePrintInvoice(${numId})" ${actDisabled?'disabled':''} title="Imprimer"><i class="fas fa-print"></i></button></div></td>`;
+                tableBody.append(row);
+            });
+        } catch (e) {
+            if(!e.message.startsWith('Auth')){
+                console.error("Err loadInvoices:",e);
+                showAlert(`Err chargement factures: ${e.message}`);
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center empty-state"><i class="fas fa-exclamation-circle"></i> Erreur chargement historique.</td></tr>';
+            }
+        } finally {
+            // hideLoader(); // Let loadPatientInfo hide the main loader
+        }
+    }
+    // *** END MODIFIED loadInvoices ***
+
     async function updateInvoiceStatus(id,status){if (!currentIPP || typeof id!=='number'||!status)return; showLoader();try{await apiService.updatePaymentStatus(id,status);showAlert("Statut màj!","success");loadInvoices(currentIPP);}catch(e){if(!e.message.startsWith('Auth')){showAlert(`Erreur màj statut: ${e.message}`);}}finally{hideLoader();}}
     function generateInvoiceHtml(invD, patI, cliD) { /* ... Same as before ... */ }
     async function handleDownloadPdf(id){if (!currentIPP || !currentPatientInfo || isNaN(parseInt(id))) return; /* ... rest is same ... */ }
@@ -196,73 +295,69 @@
         clearTimeout(scanTimeout); updateScanStatus('Code détecté. Traitement...', 'loading');
         try {
             const url = new URL(scannedUrl);
-            console.log(`Compare Scan Base: "${url.origin + url.pathname}" vs Expected: "${QR_TARGET_BASE_URL}"`); // Improved logging for web URLs
-            if (scannedUrl.startsWith(QR_TARGET_BASE_URL)) { // Check if scanned URL starts with expected base
+            if (scannedUrl.startsWith(QR_TARGET_BASE_URL)) {
                 const ippFromQr = url.searchParams.get('ipp');
-                console.log("Attempting to get IPP. Found:", ippFromQr);
                 if (ippFromQr) {
-                    console.log("IPP Found:", ippFromQr);
                     updateScanStatus(`Patient IPP ${ippFromQr} trouvé. Chargement...`, 'success');
                     loadPatientIntoCurrentDashboard(ippFromQr); // Call the function to load data
-                } else { console.error("IPP missing."); updateScanStatus('Erreur: IPP manquant.', 'error'); }
-            } else { console.error("Base URL mismatch."); updateScanStatus('Erreur: QR Code non reconnu.', 'error'); }
-        } catch (e) { console.error("Error processing scan:", e); updateScanStatus(`Erreur: Format QR invalide (${e.message}).`, 'error'); }
+                } else { updateScanStatus('Erreur: IPP manquant.', 'error'); }
+            } else { updateScanStatus('Erreur: QR Code non reconnu.', 'error'); }
+        } catch (e) { updateScanStatus(`Erreur: Format QR invalide (${e.message}).`, 'error'); }
     }
 
-    // *** THIS FUNCTION LOADS DATA AFTER SCAN ***
+    // *** MODIFIED: This function now loads patient info directly ***
     function loadPatientIntoCurrentDashboard(scannedIpp) {
         console.log(`Loading patient ${scannedIpp} into Billing dashboard via QR`);
         currentIPP = scannedIpp; // Set global IPP
 
-        // Update URL (optional but good UX)
+        // Update URL (optional)
         try { const newUrl = new URL(window.location); newUrl.searchParams.set('ipp', scannedIpp); window.history.pushState({ ipp: scannedIpp }, '', newUrl); } catch(e) { console.error("History API err:", e); }
 
-        // Load patient info, which will also load invoices
+        // *** Directly call loadPatientInfo which handles loading invoices too ***
         loadPatientInfo(scannedIpp);
 
         // Clear scan message after delay
         setTimeout(() => { updateScanStatus(''); }, 4000);
-        // Scroll to show patient info
+        // Scroll to patient info section
         document.getElementById('patientInfo')?.parentElement?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     // --- END QR SCANNER CODE ---
 
-    // --- window.onload (MODIFIED) ---
-     window.onload = () => {
-      if (!localStorage.getItem('authToken')) {
-          console.log("Billing Dash: No auth token, redirecting.");
-          window.location.href = LOGIN_PAGE_URL;
-          return;
-      }
-       document.body.classList.add('loaded');
-       console.log("Billing dashboard authenticated.");
-
-       // --- MODIFIED Logic: Load services, attach listeners, check for URL IPP ---
-       setupPage(); // Load services and setup general listeners
-
-       const urlParamsOnLoad = new URLSearchParams(window.location.search); // Define urlParams here
-       const ippFromUrl = urlParamsOnLoad.get("ipp"); // Use the new variable
-
-       if (ippFromUrl) { // Load patient if IPP is in URL (e.g., refresh after scan)
-           console.log(`IPP found in URL: ${ippFromUrl}. Loading initial patient data.`);
-           currentIPP = ippFromUrl; // Set global IPP
-           loadPatientInfo(currentIPP); // Load data based on URL parameter
-       } else { // No IPP in URL, wait for scan
-           console.log("No initial IPP in URL. Waiting for QR scan.");
-            document.getElementById('patientInfo').innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-qrcode"></i><div class="empty-state-message">Prêt à scanner</div><div class="empty-state-description">Utilisez le bouton "Scanner QR Patient".</div></div>';
-            document.getElementById('factureBody').innerHTML = '<tr><td colspan="6" class="text-center">Scannez un QR code patient.</td></tr>';
-            enableInvoiceSection(false);
-       }
-    };
-
     // --- Setup Page Function --- (Loads services, attaches listeners)
     function setupPage() {
         console.log("Setting up Billing page listeners and services...");
-        loadServices(); // Load services dropdown content ONCE
-        // Attach listeners ONCE
+        // Load services only once
+        if (!servicesLoaded) {
+            loadServices();
+        }
+        // Attach listeners only once
         $('#creerFacture').off('click').on('click', createInvoice);
         $('#services').off('change').on('change', updateTotal);
     }
+
+    // --- window.onload (Corrected) ---
+    window.onload = () => {
+      if (!localStorage.getItem('authToken')) { console.log("Billing Dash: No auth token..."); window.location.href = LOGIN_PAGE_URL; return; }
+       document.body.classList.add('loaded'); console.log("Billing auth OK.");
+
+       // ** Define urlParams inside onload **
+       const urlParamsOnLoad = new URLSearchParams(window.location.search);
+
+       setupPage(); // Always setup the page structure/listeners
+
+       const ippFromUrl = urlParamsOnLoad.get("ipp"); // Use the defined variable
+
+       if (ippFromUrl) { // Load patient if IPP is in URL
+           console.log(`IPP in URL: ${ippFromUrl}. Loading initial data.`);
+           currentIPP = ippFromUrl;
+           loadPatientInfo(currentIPP); // Load data for this IPP
+       } else { // No IPP in URL, show empty state
+           console.log("No initial IPP. Waiting scan.");
+           document.getElementById('patientInfo').innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><i class="fas fa-qrcode"></i><div class="empty-state-message">Prêt à scanner</div><div class="empty-state-description">Utilisez le bouton "Scanner QR Patient".</div></div>';
+           document.getElementById('factureBody').innerHTML = '<tr><td colspan="6" class="text-center">Scannez un QR code patient.</td></tr>';
+           enableInvoiceSection(false);
+       }
+    };
 
   </script>
 </body>
